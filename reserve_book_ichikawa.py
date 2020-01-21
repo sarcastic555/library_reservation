@@ -32,8 +32,8 @@ def get_reserve_isbn_list(booklist_df,reservenum,reservenum_per_day,nowreading_d
 ### パラメータ設定
 reservenum_max=10   ## 最大で予約できる冊数
 reservenum_per_day=1 ## 1日にshortwaitとlongwaitをそれぞれ予約する冊数
-shortwait_reservenum_limit=5 ## shortwait予約可能最大数
-longwait_reservenum_limit=5 ## longwait予約可能最大数
+shortwait_reservenum_limit=7 ## shortwait予約可能最大数
+longwait_reservenum_limit=3 ## longwait予約可能最大数
 
 ## dataframeの読み込み
 nowreading_df = pd.read_csv('list/nowreading.csv')
@@ -88,9 +88,9 @@ if (len(ISBNlist_longwait)>0):
 else:
     print("longwait book will not be reserved")
 
-### shortwaitの本は最も返却日が近い本の返却日までの日数が6~10日以内の場合に予約する
+### shortwaitの本は最も返却日が近い本の返却日までの日数が2~8日以内の場合に予約する
 minimum_remain_day = nowreading_df['remainday'].min()
-if (minimum_remain_day>=6 and minimum_remain_day<=10 and len(ISBNlist_shortwait)>0):
+if (minimum_remain_day>=2 and minimum_remain_day<=8 and len(ISBNlist_shortwait)>0):
     print("shortwait book will be reserved")
     print("start reserving shortwait book")
     reserver.reserve_book(ISBNlist_shortwait)

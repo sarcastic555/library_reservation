@@ -31,6 +31,8 @@ r = session.post(login_URL, headers={'cookie': 'PHPSESSID='+php_session_id, 'ref
 
 ## csv取得
 r = session.get('https://booklog.jp/export/csv')
+#print(r.encoding)
+r.encoding = 'Shift_JIS' ## これがないと文字化けする
 print(r.text[:300]) ### 全て出力するとあふれるので最初の100文字だけ出力
 print(r.text, file=codecs.open('list/alllist.csv', 'w', 'utf-8'))
 

@@ -16,10 +16,10 @@ import html5lib
 ### マイページのHTMLを読み込んで、bookIDに対応する返却日をdatetimeで返す関数
 def get_return_date_datetime_per_book(soup,bookid):
     detail_content=soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')
-    info = detail_content[bookid].find('div', class_='column info').find_all('p')[1].text.strip()
-    year  = int(re.search('返却予定日:([0-9]+)/[0-9]+/[0-9]+',info)[1])
-    month = int(re.search('返却予定日:[0-9]+/([0-9]+)/[0-9]+',info)[1])
-    day   = int(re.search('返却予定日:[0-9]+/[0-9]+/([0-9]+)',info)[1])
+    info = detail_content[bookid].find('div', class_='column info').find_all('p')[3].find('b').text.strip()
+    year  = int(re.search('([0-9]+)/[0-9]+/[0-9]+',info)[1])
+    month = int(re.search('[0-9]+/([0-9]+)/[0-9]+',info)[1])
+    day   = int(re.search('[0-9]+/[0-9]+/([0-9]+)',info)[1])
     return datetime.date(year,month,day)
 
 ## マイページのHTMLを読み込んで、bookIDに対応する本が貸出延長可能かどうか判定する関数

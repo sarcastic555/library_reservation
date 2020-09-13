@@ -17,6 +17,8 @@ class CulilModule():
         self.sleeptime=sleeptime ## [sec]
 
     def check_existence_in_library(self,ISBN): ## ISBN[str]
+        if type(ISBN) is not int:
+            raise TypeError("type of ISBN is %s, but int is expected" % type(ISBN))
         time.sleep(self.sleeptime)
         param={'appkey':self.app_key,
                'isbn':ISBN,
@@ -37,7 +39,6 @@ class CulilModule():
                     print(r.text)
                     sys.exit()
                 continue_flag=int(json_data['continue'])
-                #print(continue_flag)
 
             existlist=json_data['books'][ISBN][self.systemid]['libkey']
             existlibnum=len(existlist)

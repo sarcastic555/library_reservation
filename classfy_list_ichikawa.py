@@ -1,69 +1,103 @@
-import tool_culil
-import pandas as pd
 import datetime
+import logging
+import os
 import time
+import warnings
+
 import numpy as np
+import pandas as pd
 
-sleeptime=1 ## [sec]
+import tool_culil
 
-columnname=['サービスID','アイテムID','13桁ISBN','カテゴリ','評価','読書状況','レビュー','タグ','読書メモ(非公開)','登録日時','読了日','タイトル','作者名','出版社名','発行年','ジャンル','ページ数','価格']
-alldf = pd.read_csv('list/alllist.csv',encoding="utf-8",header=None, names=columnname)
-#alldf = pd.read_csv('list/alllist.csv',encoding="shift-jis",header=None, names=columnname)
-notread_df = alldf[alldf['読書状況']=='読みたい'] ## 読みたい本だけリストにする
-notread_df=notread_df.drop(['サービスID','アイテムID','カテゴリ','評価','レビュー','タグ','読書メモ(非公開)','登録日時','読了日','出版社名','発行年','ジャンル','ページ数','価格'], axis=1) ## 不要な列を削除
-notread_df['waitstatus']='Nan'
-notread_df=notread_df.reset_index(drop=True) ## indexの振り直し
+class BookClassifier:
+    columnname=['サービスID', 'アイテムID', '13桁ISBN', 'カテゴリ', '評価',
+                '読書状況', 'レビュー', 'タグ', '読書メモ(非公開)', '登録日時',
+                '読了日', 'タイトル', '作者名', '出版社名', '発行年', 'ジャンル',
+                'ページ数','価格']
+    def __init__(self, sleep=1):
+        logging.info("BookClassifier constructor called")
+        self.sleeptime = sleep # [sec]
+        logging.info(f"sleep time = {self.sleeptime} sec")
 
-_nowtime=datetime.datetime.today()
-print ('currenttime=%s.' % _nowtime.strftime('%Y/%m/%d %H:%M:%S'))
-print ('program start!')
+    def get_want_read_book_list(self, booklist_file):
+        logging.info("BookClassifier::get_want_read_book_list called")
+        logging.info(f"reading {booklist_file} as all book list file")
+        df = pd.read_csv(booklist_file, encoding="utf-8",
+                         header=None, names=self.__class__.columnname)
+        df = df[df['読書状況']=='読みたい']
+        df = df.dropna(subset=['13桁ISBN']) ## 13桁ISBNが無効値である書籍は対象外とする
+        df = df.astype({'13桁ISBN': int})
+        df = df.drop(['サービスID', 'アイテムID', 'カテゴリ',
+                     '評価', 'レビュー', 'タグ', '読書メモ(非公開)',
+                     '登録日時', '読了日', '出版社名', '発行年',
+                     'ジャンル', 'ページ数', '価格'], axis=1) ## 不要な列を削除
+        df['waitstatus'] = 'Nan'
+        df = df.reset_index(drop=True)
+        logging.info("Number of want read book = %d" % len(df))
+        return df
 
-### read now renting & booking book list
-try:
-    nowreading=pd.read_csv('list/nowreading.csv')
-except:
-    nowreading=pd.DataFrame(columns=['ISBN'])
-    print("Warning! list/nowreading.csv not found.")
+    def get_now_reading_book_list(self, booklist_file):
+        logging.info("BookClassifier::get_now_reading_book_list called")
+        logging.info(f"reading {booklist_file} as now reading list file")
+        if not os.path.exists(booklist_file):
+            warnings.warn(f"{booklist_file} not found. Skip reading the file")
+            return pd.DataFrame(columns=['ISBN'])
+        df = pd.read_csv(booklist_file)
+        logging.info("Number of reading book = %d" % len(df))
+        return df
+
+    def book_is_rental_or_reserving(self, book_info, nowreading_df):
+        return len(nowreading_df[nowreading_df['ISBN'] == int(book_info['13桁ISBN'])]) != 0
     
-### get book status
-for i in range(len(notread_df)):
-    if (i+1)%10==0:
-        print("%d/%d"%(i+1,len(notread_df)))
-    #print('#'*20)
-    time.sleep(sleeptime)
-    ## ISBNがない本(電子書籍など)の場合は蔵書なしとする
-    #print(notread_df.iloc[i]['13桁ISBN'])
-    if(np.isnan(notread_df.iloc[i]['13桁ISBN'])):
-        notread_df.loc[i,['waitstatus']]='蔵書なし'
-        continue
-    
-    ## 現在借りてる本、予約してる本に含まれていた場合は強制終了
-    if (len(nowreading[nowreading['ISBN']==int(notread_df.iloc[i]['13桁ISBN'])]) != 0):
-        notread_df.loc[i,['waitstatus']]='借用中または予約中'
-        #print('%s: 借用中または予約中')
-        continue
+    def evaluate_book_status(self, book_info, nowreading_df):
+        if(np.isnan(book_info['13桁ISBN'])):
+            return 'not_found'
+        if self.book_is_rental_or_reserving(book_info, nowreading_df):
+            return 'rental_or_reserving'
+        ## その他の本
+        module = tool_culil.CulilModule()
+        renting_possible_flag, renting_soon_flag = module.check_existence_in_library(str(book_info['13桁ISBN']))
+        if (renting_possible_flag and renting_soon_flag):
+            return 'no_reservation'
+        elif (renting_possible_flag and not renting_soon_flag):
+            return 'has_reservation'
+        else:
+            return 'not_found'
 
-    ## その他の本
-    module = tool_culil.CulilModule()
-    module.set_sleep_time(sleeptime)
-    renting_possible_flag, renting_soon_flag = module.check_existence_in_library(str(notread_df.iloc[i]['13桁ISBN']))
-    if (renting_possible_flag and renting_soon_flag):
-        notread_df.loc[i,['waitstatus']]='予約なし'
-        #print('予約なし')
-    elif (renting_possible_flag and not renting_soon_flag):
-        notread_df.loc[i,['waitstatus']]='予約あり'
-        #print('予約あり')
-    else:
-        notread_df.loc[i,['waitstatus']]='蔵書なし'
-        #print('蔵書なし')   
-notread_df[notread_df['waitstatus']=='蔵書なし'].to_csv("list/notfound.csv")
-notread_df[notread_df['waitstatus']=='予約なし'].to_csv("list/shortwait.csv")
-notread_df[notread_df['waitstatus']=='予約あり'].to_csv("list/longwait.csv")
+    def create_all_book_status(self, notread_df, nowreading_df):
+        logging.info("BookClassifier::create_all_book_status called")
+        book_status_list = []
+        for i in range(len(notread_df)):
+            if (i+1) %10 == 0:
+                logging.info("Classfying book %d/%d" % (i+1, len(notread_df)))
+            time.sleep(self.sleeptime)
+            book_info = notread_df.iloc[i]
+            status = self.evaluate_book_status(book_info, nowreading_df)
+            book_status_list.append(status)
+        return pd.Series(book_status_list)
 
-print("ブクログ登録済み本: %d冊"%len(alldf))
-print("読みたいラベルの本: %d冊"%len(notread_df))
-print("-- 現在借用中or予約中: %d冊"%len(nowreading))
-print("-- 蔵書なし: %d冊"%len(notread_df[notread_df['waitstatus']=='蔵書なし']))
-print("-- 予約なし: %d冊"%len(notread_df[notread_df['waitstatus']=='予約なし']))
-print("-- 予約あり: %d冊"%len(notread_df[notread_df['waitstatus']=='予約あり']))
-print("注:読みたいラベルの本から借りてるとは限らないので、下4つの冊数を合計しても読みたいラベルの冊数に一致しない可能性がある")
+    def output_book_based_on_status(self, df, output_dir):
+        logging.info("BookClassifier::output_book_based_on_status called")
+        for status in ["not_found", "no_reservation", "has_reservation"]:
+            df_target = df[df['waitstatus']==status]
+            logging.info("Number of %s book = %d" % (status, len(df_target)))
+            df_target.to_csv(f"{output_dir}/{status}.csv")
+        # 注: 現在借りている本が読みたいラベルの本リストに存在しているとは限らないので、
+        # 「現在借用中or予約中」「蔵書なし」「予約なし」「予約あり」を足したものと
+        # 「読みたいラベルの本」は一致しない可能性がある
+
+
+def main():
+    logging.basicConfig(level=logging.INFO,
+                        format='%(levelname)s : %(asctime)s : %(message)s')
+    logging.info("classfy_list_ichikawa.py start")
+    bc = BookClassifier(sleep=1)
+    df_not_read = bc.get_want_read_book_list("list/alllist.csv")
+    df_reading = bc.get_now_reading_book_list("list/nowreading.csv")
+    status_series = bc.create_all_book_status(df_not_read, df_reading)
+    df_not_read['waitstatus'] = status_series
+    bc.output_book_based_on_status(df_not_read, output_dir="list")
+    logging.info("classfy_list_ichikawa.py end")
+
+if __name__ == "__main__":
+    main()

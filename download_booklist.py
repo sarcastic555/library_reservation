@@ -80,7 +80,8 @@ class BooklogManager:
 
 
 def main():
-    logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
+    logging.basicConfig(level=logging.INFO,
+                        format='%(levelname)s : %(asctime)s : %(message)s')
 
     logging.info('download_booklist.py start')
     booklog_manager = BooklogManager()

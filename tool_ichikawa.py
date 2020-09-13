@@ -140,25 +140,12 @@ class IchikawaModule:
         self.register_sessionID(sessionid_string)
         mycookie=self.get_cookie_from_header(r.cookies)
         self.register_cookie(mycookie)
-        if (self.debug):
-            print("======= 0. enter login page start ========")
-            print("sessionid_string=%s"%sessionid_string)
-            print(mycookie)
-            print(r.text, file=codecs.open('tmp/dump0.html', 'w', 'utf-8'))
-            print("======= 0. enter login page end ==========")
-        
         
         ### 1. ログイン画面に入る
         time.sleep(self.sleeptime)
         r = session.get(self.URL_loginpage, headers=self.header, cookies=self.cookie)
         mycookie=self.get_cookie_from_header(r.cookies)
-        self.register_cookie(mycookie)
-        if (self.debug):
-            print("======= 1. enter login page start ========")
-            print(mycookie)
-            print(r.text, file=codecs.open('tmp/dump1.html', 'w', 'utf-8'))
-            print("======= 1. enter login page end ==========")
-        
+        self.register_cookie(mycookie)        
         
         ## 2. ログイン処理
         data={
@@ -173,15 +160,6 @@ class IchikawaModule:
         mycookie = self.get_cookie_from_header(r.cookies)
         self.register_cookie(mycookie)
         sessionid_string=self.get_sessionid_from_header(r.headers)
-        if (self.debug):
-            print("======= 2. login start ========")
-            print(mycookie)
-            print(r.status_code)
-            print(r.text, file=codecs.open('tmp/dump2.html', 'w', 'utf-8'))
-            print("sessionid_string=%s"%sessionid_string)
-            self.register_sessionID(sessionid_string)
-            print("======= 2. login end ==========")        
-
         return session
 
     def get_mypage_book_df(self, listtype='lend'): ## listtype='lend' or 'reserve'
@@ -197,7 +175,7 @@ class IchikawaModule:
         ## 3. 貸し出し,または予約の状況一覧のページに移動
         time.sleep(self.sleeptime)
         r = session.get('%s/%s-list.do'%(self.URL_booklist,listtype), headers=self.header, cookies=self.cookie)
-        if (self.debug): print(r.text, file=codecs.open('tmp/dump3-E.html', 'w', 'utf-8'))
+
         soup_list = bs4.BeautifulSoup(r.text, "html5lib")
         h2_in_soup = soup_list.find('h2', class_='nav-hdg')
         if h2_in_soup == None:
@@ -232,10 +210,7 @@ class IchikawaModule:
             
             r = session.get('%s/%s-detail.do'%(self.URL_booklist,listtype),headers=self.header,cookies=self.cookie, params={'idx':'%d'%(bookid%10)})
             time.sleep(self.sleeptime)
-            if (self.debug): print(r.text, file=codecs.open('tmp/dump3-C.html', 'w', 'utf-8'))
             r = session.get('%s/switch-detail.do'%self.URL_booklist, headers=self.header, cookies=self.cookie, params={'idx':'0'}) ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
-            if (self.debug): print(r.text, file=codecs.open('tmp/dump3-D.html', 'w', 'utf-8'))
-            if (self.debug): print(r.text, file=codecs.open('tmp/dump3-%d.html'%bookid, 'w', 'utf-8'))
             soup = bs4.BeautifulSoup(r.text, "html.parser")
             table_contents = soup.find('table', class_='tbl-04').find_all('tr')
             isbn10 = None
@@ -294,9 +269,7 @@ class IchikawaModule:
             ### 貸出、予約一覧資料の一覧ページに戻る
             r = session.get(self.URL_toppage, headers=self.header, cookies=self.cookie, params=self.mypage_params)
             time.sleep(self.sleeptime)
-            if (self.debug): print(r.text, file=codecs.open('tmp/dump3-A.html', 'w', 'utf-8'))
             r = session.get('%s/%s-list.do'%(self.URL_booklist,listtype), headers=self.header, cookies=self.cookie)
-            if (self.debug): print(r.text, file=codecs.open('tmp/dump3-B.html', 'w', 'utf-8'))
 
             ### bookidが9以上になった時は次のページに遷移する
             if (bookid<9):
@@ -331,11 +304,6 @@ class IchikawaModule:
         ## 3. 詳細検索ページに移動
         time.sleep(self.sleeptime)
         r = session.get(self.URL_search, headers=self.header, cookies=self.cookie)
-        if (self.debug):
-            print("======= 3. search page start ========")
-            print(r.status_code)
-            print(r.text, file=codecs.open('tmp/dump3.html', 'w', 'utf-8'))
-            print("======= 3. search page end ========")
 
         ## 4. 資料の検索
         for isbn in ISBNlist:
@@ -350,12 +318,6 @@ class IchikawaModule:
                 sys.exit()
             searchlistnum=int(re.search('（全([0-9]+) 件）' ,searchlistnum_text.strip())[1])
             ##  1 ～ 1 件（全1 件）-> 1
-            if (self.debug):
-                print("======= 4. reserve start ========")
-                print(r.status_code)
-                print(r.text, file=codecs.open('tmp/dump4.html', 'w', 'utf-8'))
-                print("search list num = %d"%searchlistnum)
-                print("======= 4. reserve end ========")
             
             ## 5. 予約画面に遷移
             time.sleep(self.sleeptime)
@@ -363,35 +325,15 @@ class IchikawaModule:
             r = session.get(self.URL_reserve, headers=self.header, cookies=self.cookie, params=self.reserve_params)
             soup = bs4.BeautifulSoup(r.text, "html.parser")
             chunkvalue=soup.find(class_='list-book result hook-check-all').find('input')['value'] ## ex.'1102535405'
-            if (self.debug):
-                print("======= 5. move reservation page start ========")
-                print(self.URL_reserve)
-                print(self.header)
-                print(self.cookie)
-                print(self.reserve_params)
-                print(chunkvalue)
-                print(r.status_code)
-                print(r.text, file=codecs.open('tmp/dump5.html', 'w', 'utf-8'))
-                print("======= 5. move reservation page end ========")
 
             ## 6. 予約バスケット画面に遷移
             time.sleep(self.sleeptime)
             self.basket_submit_params['chk_check']=chunkvalue
             r = session.post(self.URL_basket, headers=self.header, cookies=self.cookie, data=self.basket_submit_params)
-            if (self.debug):
-                print("======= 6. move basket page start ========")
-                print(r.status_code)
-                print(r.text, file=codecs.open('tmp/dump6.html', 'w', 'utf-8'))
-                print("======= 6. move basket page end ========")
                 
             ## 7. 予約完了
             time.sleep(self.sleeptime)
             r = session.post(self.URL_confirm, headers=self.header, cookies=self.cookie, data=self.confirm_params)
-            if (self.debug):
-                print("======= 7. reservation accept start ========")
-                print(r.status_code)
-                print(r.text, file=codecs.open('tmp/dump7.html', 'w', 'utf-8'))
-                print("======= 7. reservation accept end ========")
 
             session.close()
 
@@ -496,7 +438,7 @@ class IchikawaModule:
         time.sleep(self.sleeptime)
         r = session.get(self.URL_basket, headers=self.header, cookies=self.cookie)
         soup = bs4.BeautifulSoup(r.text, "html5lib")
-        print(r.text, file=codecs.open('tmp/debug.html', 'w', 'utf-8'))
+
         
         ## 予約カゴに入っている書籍冊数を取得
         totalnum_basket_text = soup.find_all("form")[1].find_all('font', attrs={'color':'red'})[0].text
@@ -537,7 +479,6 @@ class IchikawaModule:
             time.sleep(self.sleeptime)
             r = session.get(self.URL_basket, headers=self.header, cookies=self.cookie)
             soup = bs4.BeautifulSoup(r.text, "html5lib")
-            print(r.text, file=codecs.open('tmp/debug.html', 'w', 'utf-8'))
         
             ## 予約カゴに入っている書籍冊数を取得
             totalnum_basket_text = soup.find_all("form")[1].find_all('font', attrs={'color':'red'})[0].text

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-                                                                                                
 import bs4
 import re
+import logging
 import time
 import datetime
 import sys
@@ -9,57 +10,85 @@ import requests
 import codecs
 import csv
 
-booklogID = "ngkqnok"
-booklogPass = 'ngkqnok555'
-login_URL='https://booklog.jp/login'
-export_URL='https://booklog.jp/export'
-download_url='https://download.booklog.jp/shelf/csv?signature={}'
-## delete old csv files
-if os.path.exists("list/alllist.csv"):
-    os.system('rm list/alllist.csv')
-_nowtime=datetime.datetime.today()
-print ('currenttime=%s.' % _nowtime.strftime('%Y/%m/%d %H:%M:%S'))
-print ('download_booklist.py start!')
+class BooklogManager:
+    login_URL='https://booklog.jp/login'
+    export_URL='https://booklog.jp/export'
+    download_URL='https://download.booklog.jp/shelf/csv?signature={}'
+    logout_URL='https://booklog.jp/logout'
 
-data_login={
-    'service': 'booklog',
-    'ref': '',
-    'account': 'ngkqnok',
-    'password': 'ngkqnok555'
-}
-session = requests.session()
+    def __init__(self):
+        logging.info("BooklogManager constructore called")
+        self.booklog_id = os.environ['BOOKLOG_ID']
+        self.booklog_pass = os.environ['BOOKLOG_PASSWORD']
 
-## create session ID
-## php_session_idは同じものを複数使うと（かつそのセッションをクローズしないと？未確認）
-## 2回目以降ログインできなくなるため現在時刻を代入し重複が発生しないようにする
-php_session_id = str(int(_nowtime.timestamp()))
-print("php_session_id")
-print(php_session_id)
+        self.session = requests.session()
+        ## create session ID
+        ## php_session_idは同じものを複数使うと（かつそのセッションをクローズしないと？未確認）
+        ## 2回目以降ログインできなくなるため現在時刻を代入し重複が発生しないようにする
+        now = datetime.datetime.now()
+        self.session_id = str(int(now.timestamp()))
+        logging.debug(f"session_id = {self.session_id}")
 
-## ログイン
-r = session.get(login_URL)
-r = session.post(login_URL, headers={'cookie': 'PHPSESSID='+php_session_id, 'referer': login_URL}, data=data_login, allow_redirects=True) ## cookie(ハードコードで良さそう)とrefererが必須
-with open('out1.html', mode='w', encoding = 'utf-8') as fw:
-    fw.write(r.text)
+        self.login_header = self.generate_login_header(self.session_id)
+        self.login_data = self.generate_login_data(self.booklog_id, self.booklog_pass)
+        self.signature = None
 
-## signature取得(ボタンにリンクとして埋め込まれている)
-r = session.get(export_URL)
-soup = bs4.BeautifulSoup(r.text, 'html.parser')
-button = soup.find(class_='buttons')
-signature = re.search('.*signature=(.*)', button.find('a')['href'])[1]
-print(signature)
+    def generate_login_header(self, session_id):
+        header = {}
+        header['cookie'] = f"PHPSESSID={session_id}"
+        header['referer'] = self.__class__.login_URL
+        return header
 
-## csvダウンロード
-r = session.get(download_url.format(signature))
-r.encoding = 'Shift_JIS' ## これがないと文字化けする
-print(r.text[:300]) ### 全て出力するとあふれるので最初の100文字だけ出力
-print(r.text, file=codecs.open('list/alllist.csv', 'w', 'utf-8'))
+    def generate_login_data(self, account, password):
+        data = {}
+        data['service'] = 'booklog'
+        data['ref'] = ''
+        data['account'] = account
+        data['password'] = password
+        return data
 
-## ログアウト
-r = session.get('https://booklog.jp/logout', headers={'cookie': 'PHPSESSID='+php_session_id})
-r.close()
+    def login(self):
+        logging.info("BooklogManager::login called")
+        self.session.get(self.__class__.login_URL)
+        self.session.post(self.__class__.login_URL, headers=self.login_header, data=self.login_data, allow_redirects=True)
 
-## 結果出力
-print ('download_booklist.py end!')
-_nowtime=datetime.datetime.today()
-print ('currenttime=%s.' % _nowtime.strftime('%Y/%m/%d %H:%M:%S'))
+    def set_signature(self):
+        logging.info("BooklogManager::set_signature called")
+        r = self.session.get(self.__class__.export_URL)
+        soup = bs4.BeautifulSoup(r.text, 'html.parser')
+        button = soup.find(class_='buttons')
+        ## signature取得(ボタンにリンクとして埋め込まれている)
+        self.signature = re.search('.*signature=(.*)', button.find('a')['href'])[1]
+        logging.debug(f"signature={self.signature}")
+
+    def download_csv_file(self, outfile_name):
+        logging.info("BooklogManager::download_csv_file called")
+        ## csvダウンロード
+        r = self.session.get(self.__class__.download_URL.format(self.signature))
+        r.encoding = 'Shift_JIS' ## これがないと文字化けする
+        logging.debug(r.text[:300]) ### 全て出力するとあふれるので最初の100文字だけ出力
+        if os.path.exists(outfile_name):
+            logging.info(f"rm {outfile_name}")
+            os.remove(outfile_name)
+        print(r.text, file=codecs.open(outfile_name, 'w', 'utf-8'))
+
+    def logout(self):
+        logging.info("BooklogManager::logout called")
+        ## ログアウト
+        r = self.session.get(self.__class__.logout_URL, headers={'cookie': 'PHPSESSID='+self.session_id})
+        r.close()
+
+
+def main():
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
+
+    logging.info('download_booklist.py start')
+    booklog_manager = BooklogManager()
+    booklog_manager.login()
+    booklog_manager.set_signature()
+    booklog_manager.download_csv_file("list/alllist.csv")
+    booklog_manager.logout()
+    logging.info('download_booklist.py end')
+
+if __name__ == "__main__":
+    main()

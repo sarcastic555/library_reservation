@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import time
 import datetime
+import logging
 import sys
 import os
 import re
@@ -12,6 +13,9 @@ import codecs
 import pandas as pd
 import numpy as np
 import html5lib
+
+logging.basicConfig(level=logging.INFO,
+                    format='%(levelname)s : %(asctime)s : %(message)s')
 
 ### マイページのHTMLを読み込んで、bookIDに対応する返却日をdatetimeで返す関数
 def get_return_date_datetime_per_book(soup,bookid):
@@ -121,7 +125,6 @@ class IchikawaModule:
         self.cookie=cookie
         
     def get_sessionid_from_header(self, headers):
-        print(headers)
         return headers['Set-Cookie'].split(";")[0][11:] ## 頭の"JSESSIONID="を削除する
 
     def get_cookie_from_header(self, cookies):
@@ -135,35 +138,30 @@ class IchikawaModule:
 
         ### 0. 図書館トップ画面に移動
         time.sleep(self.sleeptime)
-        r = session.get(self.URL_entrance, headers=self.header)
-        sessionid_string=self.get_sessionid_from_header(r.headers)
-        self.register_sessionID(sessionid_string)
-        mycookie=self.get_cookie_from_header(r.cookies)
-        self.register_cookie(mycookie)
+        r = session.get(self.URL_entrance)
+        self.header["Cookie"] = r.headers["Set-Cookie"]
         
         ### 1. ログイン画面に入る
         time.sleep(self.sleeptime)
-        r = session.get(self.URL_loginpage, headers=self.header, cookies=self.cookie)
-        mycookie=self.get_cookie_from_header(r.cookies)
-        self.register_cookie(mycookie)        
-        
+        r = session.get(self.URL_loginpage, headers=self.header)
+
         ## 2. ログイン処理
+        time.sleep(self.sleeptime)
         data={
             'txt_usercd': self.ID,
             'txt_password': self.password,
             'submit_btn_login': 'ログイン(認証)'
         }
-        time.sleep(self.sleeptime)
-        session = requests.session()
-        r = session.post(self.URL_toppage, headers=self.header, data=data, cookies=self.cookie, allow_redirects=False)
-        ### allow_redirects=Falseのオプションをつけると、ページ遷移(HTTPステータス302)の場合に勝手に遷移しない
-        mycookie = self.get_cookie_from_header(r.cookies)
-        self.register_cookie(mycookie)
-        sessionid_string=self.get_sessionid_from_header(r.headers)
+        ### allow_redirects=Falseのオプションをつけないとヘッダからクッキーが取得できない
+        r = session.post(self.URL_loginpage, headers=self.header, data=data, allow_redirects=False)
+        with open('login_manip.html', 'w') as file:
+            file.write(r.text)
+        self.header["Cookie"] = r.headers["Set-Cookie"]
+
         return session
 
     def get_mypage_book_df(self, listtype='lend'): ## listtype='lend' or 'reserve'
-
+        logging.info(f"get_mypage_book_df(listtype={listtype}) is called")
         df=pd.DataFrame(index=[],columns=self.columnname)
         if (listtype!='lend' and listtype!='reserve'):
             print("Error! Invalid listtype.")
@@ -179,7 +177,7 @@ class IchikawaModule:
         soup_list = bs4.BeautifulSoup(r.text, "html5lib")
         h2_in_soup = soup_list.find('h2', class_='nav-hdg')
         if h2_in_soup == None:
-            print("Object not found. Skip the following process")
+            logging.info(f"No object found in {listtype} mypage. Skip the following process")
             ### ログアウトして、sessionを終了して終わる
             r = session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
             session.close()
@@ -357,17 +355,19 @@ class IchikawaModule:
 
     ### 条件を満たした資料に関して予約延長申請を行う
     def extend_reservation_day_if_satisfied_condition(self):
-
+        logging.info("extend_reservation_day_if_satisfied_condition called")
         ## 0~2. ログイン処理
         session = self.execute_login_procedure()
                 
         ## 3. 貸し出し状況一覧のページに移動
         time.sleep(self.sleeptime)
-        r = session.get(self.URL_lend, headers=self.header, cookies=self.cookie)
+        r = session.get(self.URL_lend, headers=self.header)
         soup = bs4.BeautifulSoup(r.text, "html5lib")
+        with open('out.html', 'w') as file:
+            file.write(r.text)
         h2_in_soup = soup.find('h2', class_='nav-hdg')
         if h2_in_soup == None:
-            print("object not found. Skip the following process")
+            logging.info("No book was found as rental status. Skip the following process.")
             ### ログアウトして、sessionを終了して終わる
             r = session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
             session.close()

@@ -213,7 +213,7 @@ class IchikawaModule:
             table_contents = soup.find('table', class_='tbl-04').find_all('tr')
             isbn10 = None
             title = None
-            ibsn13 = None
+            isbn13 = None
             for table_content in table_contents:
                 if table_content.find('th').text.strip() == "ISBN":
                     isbn10 = table_content.find('td').text.strip().replace('-','')
@@ -223,14 +223,10 @@ class IchikawaModule:
                     title = table_content.find('td').text.strip().replace('-','')
             ## タイトルが見つからないか、ISBNが10桁も13桁も見つからない場合はエラー
             if (title is None) or (isbn10 is None and isbn13 is None):
-                print("Error. Cannot get book infomation")
-                print("title=%s, isbn10=%s, isbn13=%s" % (title, isbn10, isbn13))
-                sys.exit()
+                raise Exception("Error. Cannot get book infomation (title={title}, isbn10={isbn10}, isbn13={isbn13})")
             else:
                 ## ISBNの10桁と13桁が両方存在する場合は13桁の方を選択する
-                isbn = isbn13
-                if isbn is None:
-                    isbn = isbn10
+                isbn = isbn10 if isbn13 is None else isbn13
                     
             if (self.debug): print("%s ISBN=%s"%(title,isbn))
             if (listtype=='lend'):

@@ -17,7 +17,8 @@ RUN pip3 install --upgrade pip && \
     pip3 install html5lib==1.1 && \
     pip3 install pandas==1.1.2 && \
     pip3 install mailsend==1.1.1 && \
-    pip3 install yapf==0.30.0
+    pip3 install yapf==0.30.0 && \
+    pip3 install iosrt==5.5.2
     
 
 # Environmental variable definition

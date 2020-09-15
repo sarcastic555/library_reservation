@@ -25,7 +25,6 @@ class IchikawaModule:
         self.ID='7093281'
         self.password='ngkrnok555'
         self.sleeptime=3 ## sleeping time [sec]
-        self.cookie={}
         self.URL_booklist='https://www.library.city.ichikawa.lg.jp/winj/opac/'
         self.URL_entrance='https://www.library.city.ichikawa.lg.jp/winj/opac/top.do'
         self.URL_loginpage='https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
@@ -106,7 +105,7 @@ class IchikawaModule:
     def get_extension_status_per_book(self, bookid):
       logging.info(f"IchikawaModule::get_extension_status_per_book (bookid={bookid}) called")
       time.sleep(self.sleeptime)
-      r = self.session.get(self.URL_lend_list, headers=self.header, cookies=self.cookie)
+      r = self.session.get(self.URL_lend_list, headers=self.header)
       soup = bs4.BeautifulSoup(r.text, "html5lib")
       extendbutton_content = soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='info')
       ### class='column info'(本の詳細情報)とclass='info'(延長ボタン情報)の2つが取られてしまうので、あとで2*i+1番目を指定するようにする
@@ -121,7 +120,7 @@ class IchikawaModule:
     def get_return_date_datetime_per_book(self, bookid):
       logging.info(f"IchikawaModule::get_return_date_datetime_per_book (bookid={bookid}) called")
       time.sleep(self.sleeptime)
-      r = self.session.get(self.URL_lend_list, headers=self.header, cookies=self.cookie)
+      r = self.session.get(self.URL_lend_list, headers=self.header)
       soup = bs4.BeautifulSoup(r.text, "html5lib")
       detail_content=soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')
       info = detail_content[bookid].find('div', class_='column info').find_all('p')[3].find('b').text.strip()
@@ -135,7 +134,7 @@ class IchikawaModule:
       logging.info(f"IchikawaModule::get_book_reserve_status_per_book (bookid={bookid}) called")
       if (bookid <= 9):
         time.sleep(self.sleeptime)
-        r = self.session.get(self.URL_reserve_list, headers=self.header, cookies=self.cookie)
+        r = self.session.get(self.URL_reserve_list, headers=self.header)
       elif (bookid >= 10):
         ## ページが変わる場合は次ページ情報を読み込む
         page = str(int(bookid / 10) + 1)
@@ -149,15 +148,9 @@ class IchikawaModule:
       except:        
         status = "error"
       return status
-
-    def register_cookie(self, cookie):
-        self.cookie=cookie
         
     def get_sessionid_from_header(self, headers):
         return headers['Set-Cookie'].split(";")[0][11:] ## 頭の"JSESSIONID="を削除する
-
-    def get_cookie_from_header(self, cookies):
-        return dict(JSESSIONID=cookies.get('JSESSIONID'))
 
     def set_isbn_to_params(self, isbn):
         self.search_params['txt_code']=isbn
@@ -206,7 +199,7 @@ class IchikawaModule:
     def get_num_of_reserve_basket_books(self) -> int:
       logging.info(f"IchikawaModule::get_num_of_reserve_basket_books called")
       time.sleep(self.sleeptime)
-      r = self.session.get(self.URL_basket, headers=self.header, cookies=self.cookie)
+      r = self.session.get(self.URL_basket, headers=self.header)
       soup = bs4.BeautifulSoup(r.text, "html5lib")
 
       ## 予約カゴに入っている書籍冊数を取得
@@ -218,16 +211,15 @@ class IchikawaModule:
     def clear_reserve_basket(self):
       logging.info("IchikawaModule::clear_reserve_basket called")
       time.sleep(self.sleeptime)
-      r = session.post(self.URL_basket, headers=self.header,
-                       cookies=self.cookie, data=self.basket_delete_params)
+      r = session.post(self.URL_basket, headers=self.header, data=self.basket_delete_params)
 
     def get_title_and_isbn_from_book_info(self, bookid, listtype):
       logging.info(f"IchikawaModule::get_title_and_isbn_from_book_info (bookid={bookid}, listtype={listtype}) called")
       time.sleep(self.sleeptime)
-      r = self.session.get('%s/%s-detail.do'%(self.URL_booklist,listtype),headers=self.header,cookies=self.cookie, params={'idx':'%d'%(bookid%10)})
+      r = self.session.get('%s/%s-detail.do'%(self.URL_booklist,listtype),headers=self.header, params={'idx':'%d'%(bookid%10)})
       time.sleep(self.sleeptime)
       ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
-      r = self.session.get('%s/switch-detail.do'%self.URL_booklist, headers=self.header, cookies=self.cookie, params={'idx':'0'})
+      r = self.session.get('%s/switch-detail.do'%self.URL_booklist, headers=self.header, params={'idx':'0'})
       soup = bs4.BeautifulSoup(r.text, "html.parser")
       table_contents = soup.find('table', class_='tbl-04').find_all('tr')
       isbn10 = None
@@ -251,9 +243,9 @@ class IchikawaModule:
     def get_each_book_info(self, bookid : int, listtype : str) -> str:
       logging.info(f"IchikawaModule::get_each_book_info (bookid={bookid}, listtype={listtype}) called")
       time.sleep(self.sleeptime)
-      r = self.session.get('%s/%s-detail.do'%(self.URL_booklist,listtype),headers=self.header,cookies=self.cookie, params={'idx':'%d'%(bookid%10)})
+      r = self.session.get('%s/%s-detail.do'%(self.URL_booklist,listtype),headers=self.header, params={'idx':'%d'%(bookid%10)})
       time.sleep(self.sleeptime)
-      r = self.session.get('%s/switch-detail.do'%self.URL_booklist, headers=self.header, cookies=self.cookie, params={'idx':'0'}) ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
+      r = self.session.get('%s/switch-detail.do'%self.URL_booklist, headers=self.header, params={'idx':'0'}) ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
       return r.text
 
     def reserve_book(self, isbn : str) -> bool:
@@ -290,12 +282,12 @@ class IchikawaModule:
       # 予約バスケット画面に遷移
       self.basket_submit_params['chk_check']=chunkvalue
       time.sleep(self.sleeptime)
-      r = self.session.post(self.URL_basket, headers=self.header, cookies=self.cookie, data=self.basket_submit_params)
+      r = self.session.post(self.URL_basket, headers=self.header, data=self.basket_submit_params)
       self.header['Referer'] = self.URL_basket
 
       ## 予約実施
       time.sleep(self.sleeptime)
-      r = self.session.post(self.URL_confirm, headers=self.header, cookies=self.cookie, data=self.confirm_params)
+      r = self.session.post(self.URL_confirm, headers=self.header, data=self.confirm_params)
 
       ### 結果の確認
       soup = bs4.BeautifulSoup(r.text, "html.parser")
@@ -318,6 +310,6 @@ class IchikawaModule:
       logging.info("IchikawaModule::close_session called")
       ### ログアウトして、sessionを終了して終わる
       time.sleep(self.sleeptime)
-      r = self.session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
+      r = self.session.get(self.URL_logout, headers=self.header)
       self.session.close()
 

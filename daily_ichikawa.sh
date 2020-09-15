@@ -20,8 +20,8 @@ echo "======= 3. python mailsend_checker_ichikawa.py ============" >> log/daily_
 python mailsend_checker_ichikawa.py >> log/daily_${today}.txt 2>&1
 
 ### 予約かごを空にする
-echo "======= 4. python clear_reserve_basket_chikawa.py ============" >> log/daily_${today}.txt 2>&1
-python clear_reserve_basket_chikawa.py >> log/daily_${today}.txt 2>&1
+echo "======= 4. python clear_reserve_basket_ichikawa.py ============" >> log/daily_${today}.txt 2>&1
+python clear_reserve_basket_ichikawa.py >> log/daily_${today}.txt 2>&1
 
 ### 条件を満たした場合は本の予約を実行
 echo "======= 5. python reserve_book_ichikawa.py ============" >> log/daily_${today}.txt 2>&1

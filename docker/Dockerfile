@@ -15,7 +15,8 @@ RUN pip3 install --upgrade pip && \
     pip3 install bs4==0.0.1 && \
     pip3 install requests==2.24.0 && \
     pip3 install html5lib==1.1 && \
-    pip3 install pandas==1.1.2
+    pip3 install pandas==1.1.2 && \
+    pip3 install mailsend==1.1.1
     
 
 # Environmental variable definition

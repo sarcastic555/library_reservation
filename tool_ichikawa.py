@@ -20,23 +20,23 @@ logging.basicConfig(level=logging.INFO,
 
 class IchikawaModule:
   def __init__(self):
-    self.ID='7093281'
-    self.password='ngkrnok555'
-    self.sleeptime=3 ## sleeping time [sec]
-    self.URL_booklist='https://www.library.city.ichikawa.lg.jp/winj/opac/'
-    self.URL_entrance='https://www.library.city.ichikawa.lg.jp/winj/opac/top.do'
-    self.URL_loginpage='https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
-    self.URL_toppage='https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
-    self.URL_search='https://www.library.city.ichikawa.lg.jp/winj/opac/search-detail.do'
-    self.URL_reserve='https://www.library.city.ichikawa.lg.jp/winj/opac/search-list.do'
-    self.URL_lend_list='https://www.library.city.ichikawa.lg.jp/winj/opac/lend-list.do'
-    self.URL_reserve_list='https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-list.do'
-    self.URL_basket='https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-basket.do'
-    self.URL_basket_delete='https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-basket-delete.do'
-    self.URL_confirm='https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-confirm.do'
-    self.URL_logout='https://www.library.city.ichikawa.lg.jp/winj/opac/logout.do'
-    self.URL_extend='https://www.library.city.ichikawa.lg.jp/winj/opac/lend-extension-confirm.do'
-    self.header={
+    self.ID = os.environ["ICHIKAWA_LIBRARY_ID"]
+    self.password = os.environ["ICHIKAWA_LIBRARY_PASSWORD"]
+    self.sleeptime = 3 ## sleeping time [sec]
+    self.URL_booklist = 'https://www.library.city.ichikawa.lg.jp/winj/opac/'
+    self.URL_entrance = 'https://www.library.city.ichikawa.lg.jp/winj/opac/top.do'
+    self.URL_loginpage = 'https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
+    self.URL_toppage = 'https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
+    self.URL_search = 'https://www.library.city.ichikawa.lg.jp/winj/opac/search-detail.do'
+    self.URL_reserve = 'https://www.library.city.ichikawa.lg.jp/winj/opac/search-list.do'
+    self.URL_lend_list = 'https://www.library.city.ichikawa.lg.jp/winj/opac/lend-list.do'
+    self.URL_reserve_list = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-list.do'
+    self.URL_basket = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-basket.do'
+    self.URL_basket_delete = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-basket-delete.do'
+    self.URL_confirm = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-confirm.do'
+    self.URL_logout = 'https://www.library.city.ichikawa.lg.jp/winj/opac/logout.do'
+    self.URL_extend = 'https://www.library.city.ichikawa.lg.jp/winj/opac/lend-extension-confirm.do'
+    self.header = {
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
       'Accept-Encoding': 'gzip, deflate, br',
       'Accept-Language': 'ja,en-US;q=0.9,en;q=0.8',
@@ -57,32 +57,32 @@ class IchikawaModule:
       'txt_password': self.password,
       'submit_btn_login': 'ログイン(認証)'
     }
-    self.search_params={
+    self.search_params = {
       'chk_catph': '11 31','chk_catph': '13 33','chk_catph': '14 34','chk_catph': '15 35','chk_catph': '17 37','cmb_column1': 'title','txt_word1': '','cmb_like1': '2','cmb_unit1': '0','cmb_column2': 'author','txt_word2': '','cmb_like2': '2','cmb_unit2': '0','cmb_column3': 'publisher','txt_word3': '','cmb_like3': '2','cmb_unit3': '0','cmb_column4': 'subject','txt_word4': '','cmb_like4': '2','cmb_unit4': '0','cmb_column5': 'ndc','txt_word5': '','cmb_like5': '1','cmb_unit5': '0','cmb_column6': 'p_title','txt_word6': '','cmb_like6': '2','cmb_unit6': '0','cmb_column7': 'p_publisher','txt_word7': '','cmb_like7': '2','cmb_unit7': '0','chk_hol1tp': '00','chk_hol1tp': '80','chk_hol1tp': '20','chk_hol1tp': '50','chk_hol1tp': '90','chk_hol1tp': '30','chk_hol1tp': '40','chk_hol1tp': '10','chk_hol1tp': '11','chk_hol1tp': '12','chk_hol1tp': '13','chk_hol1tp': '70','chk_hol1tp': '72','chk_hol1tp': '75','chk_hol1tp': '76','chk_hol1tp': '61','chk_hol1tp': '62','chk_hol1tp': '63','chk_hol1tp': '64','chk_hol1tp': '65','chk_hol1tp': '66','chk_hol1tp': '67','chk_hol1tp': '68','chk_hol1tp': '69','chk_hol1tp': '60','chk_hol1tp': '71','chk_hol1tp': '73','chk_hol1tp': '74','chk_hol1tp': '77','txt_stpubdate': '','txt_edpubdate': '','cmb_volume_column': 'volume','txt_stvolume': '','txt_edvolume': '','cmb_code_column': 'isbn','txt_code': '0000000000000','txt_lom': '','txt_cln1': '','txt_cln2': '','txt_cln3': '','chk_area': '01','chk_area': '02','chk_area': '03','chk_area': '04','chk_area': '05','chk_area': '06','chk_area': '07','chk_area': '11','chk_area': '41','chk_area': '42','cmb_order': 'crtdt','opt_order': '1','opt_pagesize': '10','submit_btn_searchDetailSelAr': '所蔵検索'
     }
     # hid_sessionはあとで上書きするので暫定的に"0000000"で初期化しておく
-    self.reserve_params={
+    self.reserve_params = {
       "hid_session": "0000000","chk_rsvbib": "","submit_btn_rsv_basket": "予約かご","cmb_oder": "title","opt_oder": "1","opt_pagesize": "10","chk_check": "0","cmb_oder": "title","opt_oder": "1","opt_pagesize": "10"
     }
-    self.basket_submit_params={
+    self.basket_submit_params = {
       "hid_session": "00000000","hid_aplph": "W","cmb_area": "02","view-title": "T170P68001","txt_year": "9999","cmb_month": "12","cmb_day": "31","chk_check": "1101897016","submit_btn_reservation": "通常予約する"
     }
-    self.basket_delete_params={
+    self.basket_delete_params = {
       "hid_session": "00000000","hid_aplph": "W","cmb_area": "02","view-title": "T170P68001","txt_year": "9999","cmb_month": "12","cmb_day": "31","submit_btn_delete": "削除"
     }
-    self.basket_delete_confirm_params={
+    self.basket_delete_confirm_params = {
       "hid_session": "00000000", "submit_btn_delete": "削除"
     }
-    self.confirm_params={
+    self.confirm_params = {
       "hid_session": "00000000","hid_aplph": "W","submit_btn_confirm": "予約する"
     }
-    self.mypage_params={
+    self.mypage_params = {
       "dispatch": "/opac/mylibrary.do", "every": "1"
     }
-    self.extend_params={
+    self.extend_params = {
       "hid_session": "00000000","idx": "0","submit_btn_extend": "/T170P11011","opt_pagesize": "10","opt_pagesize": "10"
     }
-    self.extend_confirm_params={
+    self.extend_confirm_params = {
       "hid_session": "00000000","hid_lenid": "0001501174","submit_btn_confirm": "貸出延長する"
     }
 
@@ -104,14 +104,14 @@ class IchikawaModule:
   ## マイページのHTMLを読み込んで、bookIDに対応する本が貸出延長可能かどうか判定する関数
   ## 各資料の詳細ページからは判定できないので、貸し出し一覧ページから情報を取得する
   def get_extension_status_per_book(self, bookid):
-    logging.info(f"IchikawaModule::get_extension_status_per_book (bookid={bookid}) called")
+    logging.info(f"IchikawaModule::get_extension_status_per_book (bookid = {bookid}) called")
     time.sleep(self.sleeptime)
     r = self.session.get(self.URL_lend_list, headers=self.header)
     soup = bs4.BeautifulSoup(r.text, "html5lib")
     extendbutton_content = soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='info')
     ### class='column info'(本の詳細情報)とclass='info'(延長ボタン情報)の2つが取られてしまうので、あとで2*i+1番目を指定するようにする
     ### 貸出延長可能かチェック(延長ボタンがないと、rightbutton=Noneとなる)
-    rightbutton = extendbutton_content[2*bookid+1].find('a')
+    rightbutton = extendbutton_content[2 * bookid + 1].find('a')
     enableextension = False
     if rightbutton is not None:
       enableextension = True
@@ -119,15 +119,15 @@ class IchikawaModule:
 
   ### マイページのHTMLを読み込んで、bookIDに対応する返却日をdatetimeで返す関数
   def get_return_date_datetime_per_book(self, bookid):
-    logging.info(f"IchikawaModule::get_return_date_datetime_per_book (bookid={bookid}) called")
+    logging.info(f"IchikawaModule::get_return_date_datetime_per_book (bookid = {bookid}) called")
     time.sleep(self.sleeptime)
     r = self.session.get(self.URL_lend_list, headers=self.header)
     soup = bs4.BeautifulSoup(r.text, "html5lib")
     detail_content=soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')
     info = detail_content[bookid].find('div', class_='column info').find_all('p')[3].find('b').text.strip()
-    year  = int(re.search('([0-9]+)/[0-9]+/[0-9]+',info)[1])
-    month = int(re.search('[0-9]+/([0-9]+)/[0-9]+',info)[1])
-    day   = int(re.search('[0-9]+/[0-9]+/([0-9]+)',info)[1])
+    year  = int(re.search('([0-9]+)/[0-9]+/[0-9]+', info)[1])
+    month = int(re.search('[0-9]+/([0-9]+)/[0-9]+', info)[1])
+    day   = int(re.search('[0-9]+/[0-9]+/([0-9]+)', info)[1])
     return datetime.date(year,month,day)
 
   ## マイページの予約一覧のHTMLを読み込んで、本のstatus(予約順位とか)を返す関数

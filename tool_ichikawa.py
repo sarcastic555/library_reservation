@@ -31,7 +31,8 @@ class IchikawaModule:
         self.URL_toppage='https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
         self.URL_search='https://www.library.city.ichikawa.lg.jp/winj/opac/search-detail.do'
         self.URL_reserve='https://www.library.city.ichikawa.lg.jp/winj/opac/search-list.do'
-        self.URL_lend='https://www.library.city.ichikawa.lg.jp/winj/opac/lend-list.do'
+        self.URL_lend_list='https://www.library.city.ichikawa.lg.jp/winj/opac/lend-list.do'
+        self.URL_reserve_list='https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-list.do'
         self.URL_basket='https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-basket.do'
         self.URL_basket_delete='https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-basket-delete.do'
         self.URL_confirm='https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-confirm.do'
@@ -101,7 +102,7 @@ class IchikawaModule:
     def get_extension_status_per_book(self, bookid):
       logging.info(f"IchikawaModule::get_extension_status_per_book (bookid={bookid}) called")
       time.sleep(self.sleeptime)
-      r = self.session.get(self.URL_lend, headers=self.header, cookies=self.cookie)
+      r = self.session.get(self.URL_lend_list, headers=self.header, cookies=self.cookie)
       soup = bs4.BeautifulSoup(r.text, "html5lib")
       extendbutton_content = soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='info')
       ### class='column info'(本の詳細情報)とclass='info'(延長ボタン情報)の2つが取られてしまうので、あとで2*i+1番目を指定するようにする
@@ -116,7 +117,7 @@ class IchikawaModule:
     def get_return_date_datetime_per_book(self, bookid):
       logging.info(f"IchikawaModule::get_return_date_datetime_per_book (bookid={bookid}) called")
       time.sleep(self.sleeptime)
-      r = self.session.get(self.URL_lend, headers=self.header, cookies=self.cookie)
+      r = self.session.get(self.URL_lend_list, headers=self.header, cookies=self.cookie)
       soup = bs4.BeautifulSoup(r.text, "html5lib")
       detail_content=soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')
       info = detail_content[bookid].find('div', class_='column info').find_all('p')[3].find('b').text.strip()
@@ -127,22 +128,17 @@ class IchikawaModule:
 
     ## マイページの予約一覧のHTMLを読み込んで、本のstatus(予約順位とか)を返す関数
     def get_book_reserve_status_per_book(self, bookid):
-      logging.info(f"IchikawaModule::get_book_status_per_book (bookid={bookid}) called")
+      logging.info(f"IchikawaModule::get_book_reserve_status_per_book (bookid={bookid}) called")
       if (bookid <= 9):
         time.sleep(self.sleeptime)
-        r = self.session.get('%s/-list.do'%(self.URL_booklist,"reserve"), headers=self.header, cookies=self.cookie)
+        r = self.session.get(self.URL_reserve_list, headers=self.header, cookies=self.cookie)
       elif (bookid >= 10):
         ## ページが変わる場合は次ページ情報を読み込む
         page = str(int(bookid / 10) + 1)
         time.sleep(self.sleeptime)
-        r = self.session.get('%s/%s-list.do'%(self.URL_booklist,listtype), headers=self.header, params={'page': page})
+        r = self.session.get(self.URL_reserve_list, headers=self.header, params={'page': page})
       soup_list = bs4.BeautifulSoup(r.text, "html5lib")
       hoge = soup_list.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')[bookid%10]
-      for i, ho in enumerate(hoge):
-        print('#'*20)
-        print(i)
-        print(ho)
-      print(soup_list.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')[bookid%10])
       try:
         status = soup_list.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')[bookid%10].find('div', class_='column info').find_all('p')[2].text.strip()
         status = "error" if status == "" else status
@@ -311,7 +307,7 @@ class IchikawaModule:
                 
         ## 3. 貸し出し状況一覧のページに移動
         time.sleep(self.sleeptime)
-        r = session.get(self.URL_lend, headers=self.header)
+        r = session.get(self.URL_lend_list, headers=self.header)
         soup = bs4.BeautifulSoup(r.text, "html5lib")
         with open('out.html', 'w') as file:
             file.write(r.text)
@@ -351,7 +347,7 @@ class IchikawaModule:
                 print('bookdID=%d return day will be extended.'%bookid)
                 self.extend_params['idx']='%d'%bookid
                 time.sleep(self.sleeptime)
-                r = session.get(self.URL_lend, headers=self.header, cookies=self.cookie, params=self.extend_params) ## 貸出延長ボタンを押す
+                r = session.get(self.URL_lend_list, headers=self.header, cookies=self.cookie, params=self.extend_params) ## 貸出延長ボタンを押す
                 time.sleep(self.sleeptime)
                 ### hid_lenid (ex. 0001691493) を取得しparamに詰める
                 inputlist=bs4.BeautifulSoup(r.text, "html5lib").find('div', id='main').find_all('input')
@@ -371,7 +367,7 @@ class IchikawaModule:
             else:
                 bookid += 1
             ## 貸出一覧ページに戻る
-            r = session.get(self.URL_lend, headers=self.header, cookies=self.cookie)
+            r = session.get(self.URL_lend_list, headers=self.header, cookies=self.cookie)
                 
         ### ログアウトして、sessionを終了して終わる
         r = session.get(self.URL_logout, headers=self.header, cookies=self.cookie)

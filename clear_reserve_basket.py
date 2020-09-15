@@ -1,8 +1,10 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
-import pandas as pd
-from tool_ichikawa import *
 import sys
+
+import pandas as pd
+
+from tool_ichikawa import *
 
 
 ### 予約カゴを空にする

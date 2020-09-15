@@ -1,9 +1,11 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
-from tool_ichikawa import *
 import datetime
 import logging
+
 import pandas as pd
+
+from tool_ichikawa import *
 
 
 class RentalBookInfo:

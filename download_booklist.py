@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-                                                                                                
-import bs4
-import re
-import logging
-import time
-import datetime
-import sys
-import os
-import requests
 import codecs
 import csv
+import datetime
+import logging
+import os
+import re
+import sys
+import time
+
+import bs4
+import requests
+
 
 class BooklogManager:
     login_URL='https://booklog.jp/login'

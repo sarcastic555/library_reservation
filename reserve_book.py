@@ -2,9 +2,10 @@ import logging
 import os
 import random
 import warnings
-from reserve_book_info_evaluator import ReserveBookInfoEvaluator
+
 import pandas as pd
 
+from reserve_book_info_evaluator import ReserveBookInfoEvaluator
 from tool_ichikawa import IchikawaModule
 
 

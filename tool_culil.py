@@ -1,9 +1,10 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
-import requests
-import time
 import json
 import sys
+import time
+
+import requests
 
 
 class CulilModule():

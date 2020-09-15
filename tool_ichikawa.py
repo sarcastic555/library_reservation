@@ -1,19 +1,20 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
-import time
+import codecs
 import datetime
 import logging
-import sys
 import os
-import re
 import random
-import requests
-import bs4
-import codecs
-import pandas as pd
-import numpy as np
-import html5lib
+import re
+import sys
+import time
 import warnings
+
+import bs4
+import html5lib
+import numpy as np
+import pandas as pd
+import requests
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
 

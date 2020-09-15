@@ -1,9 +1,11 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
-import pandas as pd
 import sys
+
+import pandas as pd
+
 sys.path.append('../utility')
-import mailsend  ## utility/mailsend モジュールを使用
+import mailsend  # # utility/mailsend モジュールを使用
 
 ### dateframeの読み込み
 df = pd.read_csv('list/nowreading.csv')

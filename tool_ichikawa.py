@@ -17,30 +17,6 @@ import html5lib
 logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s : %(asctime)s : %(message)s')
 
-### マイページのHTMLを読み込んで、bookIDに対応する返却日をdatetimeで返す関数
-def get_return_date_datetime_per_book(soup,bookid):
-    detail_content=soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')
-    info = detail_content[bookid].find('div', class_='column info').find_all('p')[3].find('b').text.strip()
-    year  = int(re.search('([0-9]+)/[0-9]+/[0-9]+',info)[1])
-    month = int(re.search('[0-9]+/([0-9]+)/[0-9]+',info)[1])
-    day   = int(re.search('[0-9]+/[0-9]+/([0-9]+)',info)[1])
-    return datetime.date(year,month,day)
-
-## マイページのHTMLを読み込んで、bookIDに対応する本が貸出延長可能かどうか判定する関数
-def get_extension_status_per_book(soup,bookid):
-    extendbutton_content=soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='info')
-    ### class='column info'(本の詳細情報)とclass='info'(延長ボタン情報)の2つが取られてしまうので、あとで2*i+1番目を指定するようにする
-    ### 貸出延長可能かチェック(延長ボタンがないと、rightbutton=Noneとなる)
-    rightbutton = extendbutton_content[2*bookid+1].find('a')
-    enableextension = False
-    if rightbutton is not None:
-        enableextension = True
-    return enableextension
-
-## マイページのHTMLを読み込んで、本のstatus(予約順位とか)を返す関数
-def get_book_status_per_book(soup_list,bookid):
-    return soup_list.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')[bookid%10].find('div', class_='column info').find_all('p')[2].text.strip()
-
 
 class IchikawaModule:
     def __init__(self):
@@ -49,7 +25,6 @@ class IchikawaModule:
         self.password='ngkrnok555'
         self.sleeptime=3 ## sleeping time [sec]
         self.cookie={}
-        self.columnname=['title','ISBN','status','waitnum','returndate','remainday','enableextension']
         self.URL_booklist='https://www.library.city.ichikawa.lg.jp/winj/opac/'
         self.URL_entrance='https://www.library.city.ichikawa.lg.jp/winj/opac/top.do'
         self.URL_loginpage='https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
@@ -120,7 +95,61 @@ class IchikawaModule:
         self.confirm_params['hid_session']=sessionID_string
         self.extend_params['hid_session']=sessionID_string
         self.extend_confirm_params['hid_session']=sessionID_string
-        
+
+    ## マイページのHTMLを読み込んで、bookIDに対応する本が貸出延長可能かどうか判定する関数
+    ## 各資料の詳細ページからは判定できないので、貸し出し一覧ページから情報を取得する
+    def get_extension_status_per_book(self, bookid):
+      logging.info(f"IchikawaModule::get_extension_status_per_book (bookid={bookid}) called")
+      time.sleep(self.sleeptime)
+      r = self.session.get(self.URL_lend, headers=self.header, cookies=self.cookie)
+      soup = bs4.BeautifulSoup(r.text, "html5lib")
+      extendbutton_content = soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='info')
+      ### class='column info'(本の詳細情報)とclass='info'(延長ボタン情報)の2つが取られてしまうので、あとで2*i+1番目を指定するようにする
+      ### 貸出延長可能かチェック(延長ボタンがないと、rightbutton=Noneとなる)
+      rightbutton = extendbutton_content[2*bookid+1].find('a')
+      enableextension = False
+      if rightbutton is not None:
+        enableextension = True
+      return enableextension
+
+    ### マイページのHTMLを読み込んで、bookIDに対応する返却日をdatetimeで返す関数
+    def get_return_date_datetime_per_book(self, bookid):
+      logging.info(f"IchikawaModule::get_return_date_datetime_per_book (bookid={bookid}) called")
+      time.sleep(self.sleeptime)
+      r = self.session.get(self.URL_lend, headers=self.header, cookies=self.cookie)
+      soup = bs4.BeautifulSoup(r.text, "html5lib")
+      detail_content=soup.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')
+      info = detail_content[bookid].find('div', class_='column info').find_all('p')[3].find('b').text.strip()
+      year  = int(re.search('([0-9]+)/[0-9]+/[0-9]+',info)[1])
+      month = int(re.search('[0-9]+/([0-9]+)/[0-9]+',info)[1])
+      day   = int(re.search('[0-9]+/[0-9]+/([0-9]+)',info)[1])
+      return datetime.date(year,month,day)
+
+    ## マイページの予約一覧のHTMLを読み込んで、本のstatus(予約順位とか)を返す関数
+    def get_book_reserve_status_per_book(self, bookid):
+      logging.info(f"IchikawaModule::get_book_status_per_book (bookid={bookid}) called")
+      if (bookid <= 9):
+        time.sleep(self.sleeptime)
+        r = self.session.get('%s/-list.do'%(self.URL_booklist,"reserve"), headers=self.header, cookies=self.cookie)
+      elif (bookid >= 10):
+        ## ページが変わる場合は次ページ情報を読み込む
+        page = str(int(bookid / 10) + 1)
+        time.sleep(self.sleeptime)
+        r = self.session.get('%s/%s-list.do'%(self.URL_booklist,listtype), headers=self.header, params={'page': page})
+      soup_list = bs4.BeautifulSoup(r.text, "html5lib")
+      hoge = soup_list.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')[bookid%10]
+      for i, ho in enumerate(hoge):
+        print('#'*20)
+        print(i)
+        print(ho)
+      print(soup_list.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')[bookid%10])
+      try:
+        status = soup_list.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')[bookid%10].find('div', class_='column info').find_all('p')[2].text.strip()
+        status = "error" if status == "" else status
+      except:        
+        status = "error"
+      return status
+
     def register_cookie(self, cookie):
         self.cookie=cookie
         
@@ -134,176 +163,101 @@ class IchikawaModule:
         self.search_params['txt_code']=isbn
 
     def execute_login_procedure(self):
-        session = requests.session()
+        self.session = requests.session()
 
         ### 0. 図書館トップ画面に移動
         time.sleep(self.sleeptime)
-        r = session.get(self.URL_entrance)
+        r = self.session.get(self.URL_entrance)
         self.header["Cookie"] = r.headers["Set-Cookie"]
         
         ### 1. ログイン画面に入る
         time.sleep(self.sleeptime)
-        r = session.get(self.URL_loginpage, headers=self.header)
+        r = self.session.get(self.URL_loginpage, headers=self.header)
 
         ## 2. ログイン処理
-        time.sleep(self.sleeptime)
         data={
             'txt_usercd': self.ID,
             'txt_password': self.password,
             'submit_btn_login': 'ログイン(認証)'
         }
         ### allow_redirects=Falseのオプションをつけないとヘッダからクッキーが取得できない
-        r = session.post(self.URL_loginpage, headers=self.header, data=data, allow_redirects=False)
+        time.sleep(self.sleeptime)
+        r = self.session.post(self.URL_loginpage, headers=self.header, data=data, allow_redirects=False)
         with open('login_manip.html', 'w') as file:
             file.write(r.text)
         self.header["Cookie"] = r.headers["Set-Cookie"]
 
-        return session
+    def get_num_of_total_books(self, listtype) -> int:
+      logging.info(f"IchikawaModule::get_num_of_total_books ({listtype}) called")
+      time.sleep(self.sleeptime)
+      r = self.session.get('%s/%s-list.do'%(self.URL_booklist,listtype), headers=self.header)
+      soup_list = bs4.BeautifulSoup(r.text, "html5lib")
+      h2_in_soup = soup_list.find('h2', class_='nav-hdg')
+      if h2_in_soup == None:
+        return 0
+      totalnum_text = h2_in_soup.text
+      logging.debug(f"totalnum_text = {totalnum_text}")
+      totalnum = int(re.search('（全([0-9]+) 件）',totalnum_text)[1])
+      return totalnum
 
-    def get_mypage_book_df(self, listtype='lend'): ## listtype='lend' or 'reserve'
-        logging.info(f"get_mypage_book_df(listtype={listtype}) is called")
-        df=pd.DataFrame(index=[],columns=self.columnname)
-        if (listtype!='lend' and listtype!='reserve'):
-            print("Error! Invalid listtype.")
-            sys.exit()
-
-        ## 0~2. ログイン処理
-        session = self.execute_login_procedure()
-            
-        ## 3. 貸し出し,または予約の状況一覧のページに移動
-        time.sleep(self.sleeptime)
-        r = session.get('%s/%s-list.do'%(self.URL_booklist,listtype), headers=self.header, cookies=self.cookie)
-
-        soup_list = bs4.BeautifulSoup(r.text, "html5lib")
-        h2_in_soup = soup_list.find('h2', class_='nav-hdg')
-        if h2_in_soup == None:
-            logging.info(f"No object found in {listtype} mypage. Skip the following process")
-            ### ログアウトして、sessionを終了して終わる
-            r = session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
-            session.close()
-            return df
-        
-        totalnum_text = h2_in_soup.text
-        if (self.debug): print('totalnum_text=%s'%totalnum_text)
-        totalnum = int(re.search('（全([0-9]+) 件）',totalnum_text)[1])
-        if (self.debug): print('totalnum=%d'%totalnum)
-
-        ### 各資料の詳細情報を保管
-        booklist_content=soup_list.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')
-        if (len(booklist_content)<min(10,totalnum)):
-            print("Error. html booklist content (%d) < %d"%(len(booklist_content),min(10,totalnum)))
-            sys.exit()
-        
-        todaydatetime = datetime.date.today()
-        
-        for bookid in range(totalnum):
-            if (self.debug): print('bookID=%d'%bookid)
-            time.sleep(self.sleeptime)
-            book_status = get_book_status_per_book(soup_list,bookid)
-            if (self.debug): print(book_status)
-
-            ## statusが"本人取消"である場合は無視する
-            if (re.search('本人取消',book_status) is not None):
-                continue
-            
-            r = session.get('%s/%s-detail.do'%(self.URL_booklist,listtype),headers=self.header,cookies=self.cookie, params={'idx':'%d'%(bookid%10)})
-            time.sleep(self.sleeptime)
-            r = session.get('%s/switch-detail.do'%self.URL_booklist, headers=self.header, cookies=self.cookie, params={'idx':'0'}) ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
-            soup = bs4.BeautifulSoup(r.text, "html.parser")
-            table_contents = soup.find('table', class_='tbl-04').find_all('tr')
-            isbn10 = None
-            title = None
-            isbn13 = None
-            for table_content in table_contents:
-                if table_content.find('th').text.strip() == "ISBN":
-                    isbn10 = table_content.find('td').text.strip().replace('-','')
-                elif table_content.find('th').text.strip() == "ISBN(13桁)":
-                    isbn13 = table_content.find('td').text.strip().replace('-','')
-                elif table_content.find('th').text.strip() == "本タイトル":
-                    title = table_content.find('td').text.strip().replace('-','')
-            ## タイトルが見つからないか、ISBNが10桁も13桁も見つからない場合はエラー
-            if (title is None) or (isbn10 is None and isbn13 is None):
-                raise Exception("Error. Cannot get book infomation (title={title}, isbn10={isbn10}, isbn13={isbn13})")
-            else:
-                ## ISBNの10桁と13桁が両方存在する場合は13桁の方を選択する
-                isbn = isbn10 if isbn13 is None else isbn13
-                    
-            if (self.debug): print("%s ISBN=%s"%(title,isbn))
-            if (listtype=='lend'):
-                listtype_JP='借用中'
-                waitnum=np.nan
-                if (self.debug): print(book_status)
-                ### 延長可能かどうか確認
-                enable_extension = get_extension_status_per_book(soup_list,bookid)
-                returndatedatetime = get_return_date_datetime_per_book(soup_list,bookid)
-                if (self.debug): print(returndatedatetime)
-                ### 返却日までの日数を計算(延長可能な場合は14を足す)
-                remainday = (returndatedatetime - todaydatetime).days
-                remainday = remainday + 14 if enable_extension else remainday
-                if (self.debug): print("remain day = %d days"%(remainday))
-            elif (listtype=="reserve"):
-                enable_extension = False
-                returndatedatetime = datetime.date(2001,1,1)
-                remainday=99
-                listtype_JP='予約中'
-                ## "利用可能", "準備中", "配送中"の時は予約待ちを0と定義する
-                if (re.search('利用可能',book_status) is not None):
-                    waitnum=0
-                elif (re.search('準備中',book_status) is not None):
-                    waitnum=0
-                elif (re.search('配送中',book_status) is not None):
-                    waitnum=0
-                else:
-                    waitnum = int(re.search('([0-9]+)位',book_status)[1])  ## 予約順位を取得
-                if (self.debug): print("waitnum=%d"%waitnum)
-                        
-                        
-            df=df.append(pd.Series([title,isbn,listtype_JP,waitnum,'%d/%d/%d'%(returndatedatetime.year,returndatedatetime.month,returndatedatetime.day),remainday,enable_extension],index=self.columnname), ignore_index=True)
-
-            ### 貸出、予約一覧資料の一覧ページに戻る
-            r = session.get(self.URL_toppage, headers=self.header, cookies=self.cookie, params=self.mypage_params)
-            time.sleep(self.sleeptime)
-            r = session.get('%s/%s-list.do'%(self.URL_booklist,listtype), headers=self.header, cookies=self.cookie)
-
-            ### bookidが9以上になった時は次のページに遷移する
-            if (bookid<9):
-                pass
-            elif (bookid>=9 and bookid<19):
-                r = session.get('%s/%s-list.do'%(self.URL_booklist,listtype), headers=self.header, cookies=self.cookie, params={'page':'2'})
-                soup_list = bs4.BeautifulSoup(r.text, "html5lib")
-                booklist_content=soup_list.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')
-            elif (bookid>=19 and bookid<29):
-                r = session.get('%s/%s-list.do'%(self.URL_booklist,listtype), headers=self.header, cookies=self.cookie, params={'page':'3'})
-                soup_list = bs4.BeautifulSoup(r.text, "html5lib")
-                booklist_content=soup_list.find('ol', class_='list-book result hook-check-all').find_all('div', class_='lyt-image image-small')
-            else:
-                print("Error. bookid (%d) exceeds the limit ()."%(bookid,29))
-                sys.exit()
-
-        ### ログアウトして、sessionを終了して終わる
-        r = session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
-        session.close()
-        if (self.debug):
-            print("printing %s dataframe"%listtype)
-            print(df)
-        return df
+    def get_title_and_isbn_from_book_info(self, bookid, listtype):
+      logging.info(f"IchikawaModule::get_title_and_isbn_from_book_info (bookid={bookid}, listtype={listtype}) called")
+      time.sleep(self.sleeptime)
+      r = self.session.get('%s/%s-detail.do'%(self.URL_booklist,listtype),headers=self.header,cookies=self.cookie, params={'idx':'%d'%(bookid%10)})
+      time.sleep(self.sleeptime)
+      ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
+      r = self.session.get('%s/switch-detail.do'%self.URL_booklist, headers=self.header, cookies=self.cookie, params={'idx':'0'})
+      soup = bs4.BeautifulSoup(r.text, "html.parser")
+      table_contents = soup.find('table', class_='tbl-04').find_all('tr')
+      isbn10 = None
+      title = None
+      isbn13 = None
+      for table_content in table_contents:
+        if table_content.find('th').text.strip() == "ISBN":
+          isbn10 = table_content.find('td').text.strip().replace('-','')
+        elif table_content.find('th').text.strip() == "ISBN(13桁)":
+          isbn13 = table_content.find('td').text.strip().replace('-','')
+        elif table_content.find('th').text.strip() == "本タイトル":
+          title = table_content.find('td').text.strip().replace('-','')
+      ## タイトルが見つからないか、ISBNが10桁も13桁も見つからない場合はエラー
+      if (title is None) or (isbn10 is None and isbn13 is None):
+        raise Exception("Error. Cannot get book infomation (title={title}, isbn10={isbn10}, isbn13={isbn13})")
+      else:
+        ## ISBNの10桁と13桁が両方存在する場合は13桁の方を選択する
+        isbn = isbn10 if isbn13 is None else isbn13
+      return title, isbn
+    
+    def get_each_book_info(self, bookid : int, listtype : str) -> str:
+      logging.info(f"IchikawaModule::get_each_book_info (bookid={bookid}, listtype={listtype}) called")
+      time.sleep(self.sleeptime)
+      r = self.session.get('%s/%s-detail.do'%(self.URL_booklist,listtype),headers=self.header,cookies=self.cookie, params={'idx':'%d'%(bookid%10)})
+      time.sleep(self.sleeptime)
+      r = self.session.get('%s/switch-detail.do'%self.URL_booklist, headers=self.header, cookies=self.cookie, params={'idx':'0'}) ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
+      return r.text
+    
+    def close_session(self):
+      logging.info("IchikawaModule::close_session called")
+      ### ログアウトして、sessionを終了して終わる
+      time.sleep(self.sleeptime)
+      r = self.session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
+      self.session.close()
 
     def reserve_book(self, ISBNlist=[]):
 
         print("reserve_book start")
         print(ISBNlist)
         ## 0~2. ログイン処理
-        session = self.execute_login_procedure()
+        self.session = self.execute_login_procedure()
         
         ## 3. 詳細検索ページに移動
         time.sleep(self.sleeptime)
-        r = session.get(self.URL_search, headers=self.header, cookies=self.cookie)
+        r = self.session.get(self.URL_search, headers=self.header, cookies=self.cookie)
 
         ## 4. 資料の検索
         for isbn in ISBNlist:
             time.sleep(self.sleeptime)
             self.set_isbn_to_params(isbn)
-            r = session.get(self.URL_search, headers=self.header, cookies=self.cookie, params=self.search_params)
+            r = self.session.get(self.URL_search, headers=self.header, cookies=self.cookie, params=self.search_params)
             soup = bs4.BeautifulSoup(r.text, "html.parser")
             searchlistnum_text = soup.find(id='main').find(class_='nav-hdg').text
             ### 検索した本がない場合はエラーを返して終了
@@ -316,20 +270,20 @@ class IchikawaModule:
             ## 5. 予約画面に遷移
             time.sleep(self.sleeptime)
             self.header['Referer']='https://www.library.city.ichikawa.lg.jp/winj/opac/search-detail.do'
-            r = session.get(self.URL_reserve, headers=self.header, cookies=self.cookie, params=self.reserve_params)
+            r = self.session.get(self.URL_reserve, headers=self.header, cookies=self.cookie, params=self.reserve_params)
             soup = bs4.BeautifulSoup(r.text, "html.parser")
             chunkvalue=soup.find(class_='list-book result hook-check-all').find('input')['value'] ## ex.'1102535405'
 
             ## 6. 予約バスケット画面に遷移
             time.sleep(self.sleeptime)
             self.basket_submit_params['chk_check']=chunkvalue
-            r = session.post(self.URL_basket, headers=self.header, cookies=self.cookie, data=self.basket_submit_params)
+            r = self.session.post(self.URL_basket, headers=self.header, cookies=self.cookie, data=self.basket_submit_params)
                 
             ## 7. 予約完了
             time.sleep(self.sleeptime)
-            r = session.post(self.URL_confirm, headers=self.header, cookies=self.cookie, data=self.confirm_params)
+            r = self.session.post(self.URL_confirm, headers=self.header, cookies=self.cookie, data=self.confirm_params)
 
-            session.close()
+            self.session.close()
 
             ### 8. 予約できているか確認
             soup = bs4.BeautifulSoup(r.text, "html.parser")
@@ -345,8 +299,8 @@ class IchikawaModule:
                 print('Reservation denied. (%s)'%reasontext)
 
             ### ログアウトして、sessionを終了して終わる
-            r = session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
-            session.close()
+            r = self.session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
+            self.session.close()
             return
 
     ### 条件を満たした資料に関して予約延長申請を行う

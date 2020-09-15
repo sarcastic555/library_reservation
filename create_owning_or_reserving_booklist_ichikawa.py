@@ -5,7 +5,9 @@ import datetime
 import logging
 import pandas as pd
 
+
 class RentalBookInfo:
+
   def __init__(self):
     self.title = ""
     self.isbn = ""
@@ -13,6 +15,7 @@ class RentalBookInfo:
     self.waitnum = 0
     self.returndate = ""
     self.statsu = ""
+
 
 def get_return_info_for_lending_book(bookid, tool):
   contents = tool.get_each_book_info(bookid=bookid, listtype="lend")
@@ -28,11 +31,12 @@ def get_return_info_for_lending_book(bookid, tool):
   remainday = remainday + 14 if enable_extension else remainday
   return enable_extension, returndate, remainday
 
+
 def get_return_info_for_reserve_book():
   enable_extension = False
-  returndatedatetime = datetime.date(2001,1,1)
+  returndatedatetime = datetime.date(2001, 1, 1)
   returndate = returndatedatetime.strftime("%Y/%m/%d")
-  remainday=99
+  remainday = 99
   return enable_extension, returndate, remainday
 
 
@@ -40,27 +44,28 @@ def get_waitnum_from_status(book_status):
   print(f"book status = {book_status}")
   ## "利用可能", "準備中", "配送中"の時は予約待ちを0と定義する
   if book_status == '利用可能':
-    waitnum=0
+    waitnum = 0
   elif book_status == '準備中':
-    waitnum=0
+    waitnum = 0
   elif book_status == '配送中':
-    waitnum=0
+    waitnum = 0
   else:
     try:
-      waitnum = int(re.search('([0-9]+)位',book_status)[1])  ## 予約順位を取得
+      waitnum = int(re.search('([0-9]+)位', book_status)[1])  ## 予約順位を取得
     except:
       waitnum = 99
   return waitnum
 
-def get_mypage_book_df(listtype='lend', sleep=3): ## listtype='lend' or 'reserve'
+
+def get_mypage_book_df(listtype='lend', sleep=3):  ## listtype='lend' or 'reserve'
   logging.info(f"get_mypage_book_df (listtype={listtype}) is called")
-  if (listtype!='lend' and listtype!='reserve'):
+  if (listtype != 'lend' and listtype != 'reserve'):
     raise ValueError(f"Error! lend or reserve is expected as listtype, but input is {listtype}")
   tool = IchikawaModule()
   tool.set_sleep_time(sleep)
 
-  columnname = ['title','ISBN','status','waitnum','returndate','remainday','enableextension']
-  df=pd.DataFrame(index=[],columns=columnname)
+  columnname = ['title', 'ISBN', 'status', 'waitnum', 'returndate', 'remainday', 'enableextension']
+  df = pd.DataFrame(index=[], columns=columnname)
 
   ## ログイン処理
   tool.execute_login_procedure()
@@ -99,20 +104,19 @@ def get_mypage_book_df(listtype='lend', sleep=3): ## listtype='lend' or 'reserve
       rental_reserve_book_info.waitnum = get_waitnum_from_status(rental_reserve_book_info.status)
 
     # dataframeに情報を登録
-    df=df.append(pd.Series([rental_reserve_book_info.title,
-                            rental_reserve_book_info.isbn,
-                            listtype,
-                            rental_reserve_book_info.waitnum,
-                            rental_reserve_book_info.returndate,
-                            rental_reserve_book_info.remainday,
-                            rental_reserve_book_info.enable_extension],
-                           index=columnname),
-                 ignore_index=True)
+    df = df.append(pd.Series([
+        rental_reserve_book_info.title, rental_reserve_book_info.isbn, listtype,
+        rental_reserve_book_info.waitnum, rental_reserve_book_info.returndate,
+        rental_reserve_book_info.remainday, rental_reserve_book_info.enable_extension
+    ],
+                             index=columnname),
+                   ignore_index=True)
 
   # 終了処理
   tool.close_session()
 
   return df
+
 
 def main():
   df_lend = get_mypage_book_df(listtype='lend')
@@ -122,6 +126,7 @@ def main():
   df = pd.concat([df_lend, df_reserve])
   print(df)
   df.to_csv('list/nowreading.csv')
+
 
 if __name__ == "__main__":
   main()

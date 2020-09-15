@@ -7,17 +7,20 @@ import pandas as pd
 
 from tool_ichikawa import IchikawaModule
 
+
 def main(sleep=3):
-  reserve_calculator = ReserveBookInfoEvaluator(nowreading_filename = "list/nowreading.csv",
-                                                shortwait_filename = "list/no_reservation.csv",
-                                                longwait_filename = "list/has_reservation.csv")
+  reserve_calculator = ReserveBookInfoEvaluator(nowreading_filename="list/nowreading.csv",
+                                                shortwait_filename="list/no_reservation.csv",
+                                                longwait_filename="list/has_reservation.csv")
   # 予約予定冊数の計算
   reserve_calculator.calculate_reserve_book_num()
   # 計算結果の出力
   reserve_calculator.print_info()
   # 予約予定の本のISBNリストの取得
-  shortwait_isbn_list = reserve_calculator.get_reserve_isbn_list_shortwait(reserve_calculator.calc.shortwait_reserve_book_num)
-  longwait_isbn_list = reserve_calculator.get_reserve_isbn_list_longwait(reserve_calculator.calc.longwait_reserve_book_num)
+  shortwait_isbn_list = reserve_calculator.get_reserve_isbn_list_shortwait(
+      reserve_calculator.calc.shortwait_reserve_book_num)
+  longwait_isbn_list = reserve_calculator.get_reserve_isbn_list_longwait(
+      reserve_calculator.calc.longwait_reserve_book_num)
 
   # 予約APIの準備
   tool = IchikawaModule()
@@ -45,6 +48,7 @@ def main(sleep=3):
       warnings.warn(f"{isbn} was not reserved.")
 
   tool.close_session()
+
 
 if __name__ == "__main__":
   main()

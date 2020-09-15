@@ -96,7 +96,7 @@ class ReserveBookNumCalculator:
   def calculate_reservation_num(self):
     logging.info("ReserveBookNumCalculator::calculate_reservation_num called")
     self.calculate_maximum_reservation_num()
-    #self.consider_remaining_date_for_reserve_book_num()
+    self.consider_remaining_date_for_reserve_book_num()
     self.compare_reserve_num_to_reserve_list_size()
     self.consider_maximum_reserve_num_per_day()
 

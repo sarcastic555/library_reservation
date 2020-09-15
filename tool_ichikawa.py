@@ -13,6 +13,7 @@ import codecs
 import pandas as pd
 import numpy as np
 import html5lib
+import warnings
 
 logging.basicConfig(level=logging.INFO,
                     format='%(levelname)s : %(asctime)s : %(message)s')
@@ -45,6 +46,11 @@ class IchikawaModule:
             'Cache-Control': 'no-cache',
             'Connection': 'keep-alive',
             'Host': 'www.library.city.ichikawa.lg.jp',
+            'Origin': 'https://www.library.city.ichikawa.lg.jp',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-User': '?1',
             'Pragma': 'no-cache',
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36'
@@ -84,8 +90,6 @@ class IchikawaModule:
         self.sleeptime=sleeptime
 
     def register_sessionID(self, sessionID_string):
-        #print(self.URL_loginpage)
-        #print(sessionID_string)
         self.URL_loginpage='%s;JSESSIONID=%s'%(self.URL_loginpage,sessionID_string)
         self.URL_toppage='%s;JSESSIONID=%s'%(self.URL_toppage,sessionID_string)
         self.header['Cookie']='JSESSIONID=%s'%sessionID_string
@@ -164,11 +168,14 @@ class IchikawaModule:
         ### 0. 図書館トップ画面に移動
         time.sleep(self.sleeptime)
         r = self.session.get(self.URL_entrance)
-        self.header["Cookie"] = r.headers["Set-Cookie"]
+        self.header['Referer'] = self.URL_entrance
+        sessionid_string = self.get_sessionid_from_header(r.headers)
+        self.register_sessionID(sessionid_string)
         
         ### 1. ログイン画面に入る
         time.sleep(self.sleeptime)
         r = self.session.get(self.URL_loginpage, headers=self.header)
+        self.header['Referer'] = self.URL_loginpage
 
         ## 2. ログイン処理
         data={
@@ -179,9 +186,9 @@ class IchikawaModule:
         ### allow_redirects=Falseのオプションをつけないとヘッダからクッキーが取得できない
         time.sleep(self.sleeptime)
         r = self.session.post(self.URL_loginpage, headers=self.header, data=data, allow_redirects=False)
-        with open('login_manip.html', 'w') as file:
-            file.write(r.text)
-        self.header["Cookie"] = r.headers["Set-Cookie"]
+        self.header['Referer'] = self.URL_loginpage
+        sessionid_string = self.get_sessionid_from_header(r.headers)
+        self.register_sessionID(sessionid_string)
 
     def get_num_of_total_books(self, listtype) -> int:
       logging.info(f"IchikawaModule::get_num_of_total_books ({listtype}) called")
@@ -195,6 +202,24 @@ class IchikawaModule:
       logging.debug(f"totalnum_text = {totalnum_text}")
       totalnum = int(re.search('（全([0-9]+) 件）',totalnum_text)[1])
       return totalnum
+
+    def get_num_of_reserve_basket_books(self) -> int:
+      logging.info(f"IchikawaModule::get_num_of_reserve_basket_books called")
+      time.sleep(self.sleeptime)
+      r = self.session.get(self.URL_basket, headers=self.header, cookies=self.cookie)
+      soup = bs4.BeautifulSoup(r.text, "html5lib")
+
+      ## 予約カゴに入っている書籍冊数を取得
+      totalnum_text = soup.find_all("form")[1].find_all('font', attrs={'color':'red'})[0].text
+      logging.debug(f'totalnum_basket_text = {totalnum_text}')
+      totalnum = int(re.search('該当件数は([0-9]+)件です',totalnum_text).group(1))
+      return totalnum
+
+    def clear_reserve_basket(self):
+      logging.info("IchikawaModule::clear_reserve_basket called")
+      time.sleep(self.sleeptime)
+      r = session.post(self.URL_basket, headers=self.header,
+                       cookies=self.cookie, data=self.basket_delete_params)
 
     def get_title_and_isbn_from_book_info(self, bookid, listtype):
       logging.info(f"IchikawaModule::get_title_and_isbn_from_book_info (bookid={bookid}, listtype={listtype}) called")
@@ -230,7 +255,65 @@ class IchikawaModule:
       time.sleep(self.sleeptime)
       r = self.session.get('%s/switch-detail.do'%self.URL_booklist, headers=self.header, cookies=self.cookie, params={'idx':'0'}) ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
       return r.text
-    
+
+    def reserve_book(self, isbn : str) -> bool:
+      logging.info(f"IchikawaModule: reserve_book (isbn = {isbn}) called")
+      if (type(isbn) != str):
+        raise TypeError("str is expected as type of isbn, but it is %s" % type(isbn))
+
+      ## 詳細検索ページに移動
+      time.sleep(self.sleeptime)
+      r = self.session.get(self.URL_search, headers=self.header)
+      self.header['Referer'] = self.URL_search
+      self.search_params['txt_code'] = isbn
+
+      # 検索処理を実行
+      time.sleep(self.sleeptime)
+      r = self.session.post(self.URL_search, headers=self.header, params=self.search_params)
+      self.header['Referer'] = self.URL_search
+      soup = bs4.BeautifulSoup(r.text, "html.parser")
+      searchlistnum_text = soup.find(id='main').find(class_='nav-hdg').text
+      ### 検索した本がない場合はエラーを返して終了
+      if searchlistnum_text.strip() == '該当するリストが存在しません。':
+        warnings.wanr(f"Target book (isbn = {isbn}) not found in the library database.")
+        return False
+      ##  1 ～ 1 件（全1 件）-> 1
+      searchlistnum=int(re.search('（全([0-9]+) 件）' ,searchlistnum_text.strip())[1])
+
+      # 予約画面に遷移
+      time.sleep(self.sleeptime)
+      r = self.session.post(self.URL_reserve, headers=self.header, params=self.reserve_params)
+      self.header['Referer'] = self.URL_reserve
+      soup = bs4.BeautifulSoup(r.text, "html.parser")
+      chunkvalue=soup.find(class_='list-book result hook-check-all').find('input')['value'] ## ex.'1102535405'
+
+      # 予約バスケット画面に遷移
+      self.basket_submit_params['chk_check']=chunkvalue
+      time.sleep(self.sleeptime)
+      r = self.session.post(self.URL_basket, headers=self.header, cookies=self.cookie, data=self.basket_submit_params)
+      self.header['Referer'] = self.URL_basket
+
+      ## 予約実施
+      time.sleep(self.sleeptime)
+      r = self.session.post(self.URL_confirm, headers=self.header, cookies=self.cookie, data=self.confirm_params)
+
+      ### 結果の確認
+      soup = bs4.BeautifulSoup(r.text, "html.parser")
+      #print(r.text)
+      result = soup.find('div', id='main').find('form').find('p').text
+      #print(result)
+      if (result == '以下のタイトルについて予約を行いました。'):
+        logging.info(f'Reservation succeeded for book {isbn}!')
+        return True
+      else:
+        for f in soup.find('div', class_='report').find_all('p'):
+          if( re.search('理由',f.text) is not None):
+            reasontext=f.text ## ex. '理由:既に予約済です。'
+            warnings.warn(f"Reservation denied: {reasontext}")
+            break
+        return False
+
+
     def close_session(self):
       logging.info("IchikawaModule::close_session called")
       ### ログアウトして、sessionを終了して終わる
@@ -238,128 +321,3 @@ class IchikawaModule:
       r = self.session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
       self.session.close()
 
-    def reserve_book(self, ISBNlist=[]):
-
-        print("reserve_book start")
-        print(ISBNlist)
-        ## 0~2. ログイン処理
-        self.session = self.execute_login_procedure()
-        
-        ## 3. 詳細検索ページに移動
-        time.sleep(self.sleeptime)
-        r = self.session.get(self.URL_search, headers=self.header, cookies=self.cookie)
-
-        ## 4. 資料の検索
-        for isbn in ISBNlist:
-            time.sleep(self.sleeptime)
-            self.set_isbn_to_params(isbn)
-            r = self.session.get(self.URL_search, headers=self.header, cookies=self.cookie, params=self.search_params)
-            soup = bs4.BeautifulSoup(r.text, "html.parser")
-            searchlistnum_text = soup.find(id='main').find(class_='nav-hdg').text
-            ### 検索した本がない場合はエラーを返して終了
-            if searchlistnum_text.strip() == '該当するリストが存在しません。':
-                print("Error. Target book not found in the library database.")
-                sys.exit()
-            searchlistnum=int(re.search('（全([0-9]+) 件）' ,searchlistnum_text.strip())[1])
-            ##  1 ～ 1 件（全1 件）-> 1
-            
-            ## 5. 予約画面に遷移
-            time.sleep(self.sleeptime)
-            self.header['Referer']='https://www.library.city.ichikawa.lg.jp/winj/opac/search-detail.do'
-            r = self.session.get(self.URL_reserve, headers=self.header, cookies=self.cookie, params=self.reserve_params)
-            soup = bs4.BeautifulSoup(r.text, "html.parser")
-            chunkvalue=soup.find(class_='list-book result hook-check-all').find('input')['value'] ## ex.'1102535405'
-
-            ## 6. 予約バスケット画面に遷移
-            time.sleep(self.sleeptime)
-            self.basket_submit_params['chk_check']=chunkvalue
-            r = self.session.post(self.URL_basket, headers=self.header, cookies=self.cookie, data=self.basket_submit_params)
-                
-            ## 7. 予約完了
-            time.sleep(self.sleeptime)
-            r = self.session.post(self.URL_confirm, headers=self.header, cookies=self.cookie, data=self.confirm_params)
-
-            self.session.close()
-
-            ### 8. 予約できているか確認
-            soup = bs4.BeautifulSoup(r.text, "html.parser")
-            result=soup.find('div', id='main').find('form').find('p').text
-            if (self.debug): print(result)
-            if (result=='以下のタイトルについて予約を行いました。'):
-                print('Reservation succeeded!')
-            else:
-                for f in soup.find('div', class_='report').find_all('p'):
-                    if( re.search('理由',f.text) is not None):
-                        reasontext=f.text ## ex. '理由:既に予約済です。'
-                        break
-                print('Reservation denied. (%s)'%reasontext)
-
-            ### ログアウトして、sessionを終了して終わる
-            r = self.session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
-            self.session.close()
-            return
-
-
-    ### 予約カゴを空にする
-    def clean_reserve_busket(self):
-
-        ## 0~2. ログイン処理
-        session = self.execute_login_procedure()
-                
-        ## 3. 予約カゴページに移動
-        time.sleep(self.sleeptime)
-        r = session.get(self.URL_basket, headers=self.header, cookies=self.cookie)
-        soup = bs4.BeautifulSoup(r.text, "html5lib")
-
-        
-        ## 予約カゴに入っている書籍冊数を取得
-        totalnum_basket_text = soup.find_all("form")[1].find_all('font', attrs={'color':'red'})[0].text
-        if (self.debug): print('totalnum_basket_text=%s'%totalnum_basket_text)
-        totalnum_basket = int(re.search('該当件数は([0-9]+)件です',totalnum_basket_text).group(1))
-        if (self.debug): print('totalnum_basket=%d'%totalnum_basket)
-
-        ## 予約カゴに入っている書籍冊数が0であれば以降の処理をスキップ
-        if totalnum_basket==0:
-            if (self.debug): print("No book is found in reserve book basket")
-
-        else:
-            if (self.debug):
-                print("Some books are found in reserve book basket")
-                print("Try to delete books from basket")
-            
-            ## 予約カゴに入っている書籍のchunk_valueを取得
-            chunk_value_list = []
-            chunk_value_string = ""
-            for i in range(totalnum_basket):
-                chunk_value = soup.find('ol', class_="list-book result hook-check-all").find_all('label')[i].find('input')['value']
-                chunk_value_list.append(chunk_value)
-                chunk_value_string += "%s "%chunk_value_string
-            self.basket_delete_params['chk_check']=chunk_value_list
-            chunk_value_string = chunk_value_string.rstrip(" ") ## 最後のスペースを削除
-            self.basket_delete_confirm_params['hid_idlist']=chunk_value_string
-
-            ## 4. 予約カゴを空にする
-            time.sleep(self.sleeptime)
-            r = session.post(self.URL_basket, headers=self.header, cookies=self.cookie, data=self.basket_delete_params)
-
-            ## 5. 予約カゴ削除の確認ボタンを押す
-            time.sleep(self.sleeptime)
-            r = session.post(self.URL_basket_delete, headers=self.header, cookies=self.cookie, data=self.basket_delete_confirm_params)
-            print("Reserve basket cleared")
-            
-            ## 6. 予約カゴページに移動
-            time.sleep(self.sleeptime)
-            r = session.get(self.URL_basket, headers=self.header, cookies=self.cookie)
-            soup = bs4.BeautifulSoup(r.text, "html5lib")
-        
-            ## 予約カゴに入っている書籍冊数を取得
-            totalnum_basket_text = soup.find_all("form")[1].find_all('font', attrs={'color':'red'})[0].text
-            if (self.debug): print('totalnum_basket_text=%s'%totalnum_basket_text)
-            totalnum_basket = int(re.search('該当件数は([0-9]+)件です',totalnum_basket_text).group(1))
-            if (self.debug): print('totalnum_basket=%d'%totalnum_basket)
-
-        ### 7. ログアウトして、sessionを終了して終わる
-        time.sleep(self.sleeptime)
-        r = session.get(self.URL_logout, headers=self.header, cookies=self.cookie)
-        session.close()
-        return

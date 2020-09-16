@@ -9,9 +9,7 @@ from tool_ichikawa import *
 
 ### 予約カゴを空にする
 def clean_reserve_busket(sleep=3):
-  tool = IchikawaModule()
-  tool.set_sleep_time(sleep)
-
+  tool = IchikawaModule(sleep=sleep)
   ## ログイン処理
   tool.execute_login_procedure()
 

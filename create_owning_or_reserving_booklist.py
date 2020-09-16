@@ -63,9 +63,7 @@ def get_mypage_book_df(listtype='lend', sleep=3):  ## listtype='lend' or 'reserv
   logging.info(f"get_mypage_book_df (listtype={listtype}) is called")
   if (listtype != 'lend' and listtype != 'reserve'):
     raise ValueError(f"Error! lend or reserve is expected as listtype, but input is {listtype}")
-  tool = IchikawaModule()
-  tool.set_sleep_time(sleep)
-
+  tool = IchikawaModule(sleep=sleep)
   columnname = ['title', 'ISBN', 'status', 'waitnum', 'returndate', 'remainday', 'enableextension']
   df = pd.DataFrame(index=[], columns=columnname)
 

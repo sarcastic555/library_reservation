@@ -27,8 +27,7 @@ def is_rental_extension_target(tool, bookid):
 ### 条件を満たした資料に関して予約延長申請を行う
 def extend_reservation_day_if_satisfied_condition(sleep=3):
   logging.info("extend_reservation_day_if_satisfied_condition called")
-  tool = IchikawaModule()
-  tool.set_sleep_time(sleep)
+  tool = IchikawaModule(sleep=sleep)
   ## ログイン処理
   tool.execute_login_procedure()
 

@@ -24,8 +24,7 @@ def main(sleep=3):
       reserve_calculator.calc.longwait_reserve_book_num)
 
   # 予約APIの準備
-  tool = IchikawaModule()
-  tool.set_sleep_time(sleep)
+  tool = IchikawaModule(sleep=sleep)
 
   # ログイン
   tool.execute_login_procedure()

@@ -37,10 +37,10 @@ class IchikawaURL:
 
 class IchikawaModule:
 
-  def __init__(self):
+  def __init__(self, sleep=3):
     self.ID = os.environ["ICHIKAWA_LIBRARY_ID"]
     self.password = os.environ["ICHIKAWA_LIBRARY_PASSWORD"]
-    self.sleeptime = 3  ## sleeping time [sec]
+    self.sleeptime = sleep  ## sleeping time [sec]
     self.header = {
         'Accept':
             'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
@@ -219,9 +219,6 @@ class IchikawaModule:
         "submit_btn_confirm": "貸出延長する"
     }
 
-  def set_sleep_time(self, sleeptime):
-    self.sleeptime = sleeptime
-
   def register_sessionID(self, sessionID_string):
     self.header['Cookie'] = f"JSESSIONID={sessionID_string}"
     self.reserve_params['hid_session'] = sessionID_string
@@ -323,8 +320,7 @@ class IchikawaModule:
     logging.info("IchikawaModule::apply_reserve_extension (bookid = {bookid})called")
     self.extend_params['idx'] = '%d' % bookid
     time.sleep(self.sleeptime)
-    r = session.get(IchikawaURL.lend_list,
-                    headers=self.header,
+    r = session.get(IchikawaURL.lend_list, headers=self.header,
                     params=self.extend_params)  ## 貸出延長ボタンを押す
     ### hid_lenid (ex. 0001691493) を取得しparamに詰める
     inputlist = bs4.BeautifulSoup(r.text, "html5lib").find('div', id='main').find_all('input')
@@ -332,14 +328,13 @@ class IchikawaModule:
     logging.debug(f"hid_lenid={hid_lenid}")
     self.extend_confirm_params['hid_lenid'] = hid_lenid
     time.sleep(self.sleeptime)
-    r = session.get(self.URL_extend,
-                    headers=self.header,
+    r = session.get(self.URL_extend, headers=self.header,
                     params=self.extend_confirm_params)  ## 貸出延長承認を確認
     result = bs4.BeautifulSoup(r.text, "html5lib").find('div', id='main').text
     if (re.search('貸出延長申込が完了しました', result) is not None):
-      return True ## 成功
+      return True  ## 成功
     else:
-      return False ## 失敗
+      return False  ## 失敗
 
   def get_num_of_total_books(self, listtype) -> int:
     logging.info(f"IchikawaModule::get_num_of_total_books ({listtype}) called")

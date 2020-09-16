@@ -9,15 +9,12 @@ import requests
 
 class CulilModule():
 
-  def __init__(self):
+  def __init__(self, sleep=3):
     self.app_key = '0969d68ad9bcd0e5c3f5119a7342933b'
     self.URL_culil = 'http://api.calil.jp/check'
     self.systemid = 'Chiba_Ichikawa'
     self.format = 'json'
-    self.sleeptime = 3  ## [sec]
-
-  def set_sleep_time(self, sleeptime):
-    self.sleeptime = sleeptime  ## [sec]
+    self.sleeptime = sleep  ## [sec]
 
   def check_existence_in_library(self, ISBN):  ## ISBN[str]
     if type(ISBN) is not int:

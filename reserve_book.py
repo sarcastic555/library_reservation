@@ -25,10 +25,6 @@ def main(sleep=3):
 
   # 予約APIの準備
   tool = IchikawaModule(sleep=sleep)
-
-  # ログイン
-  tool.execute_login_procedure()
-
   # 待ち時間小の初期の予約処理を実施
   logging.info("%d books will be reserved as shortwait" % len(shortwait_isbn_list))
   for isbn in shortwait_isbn_list:

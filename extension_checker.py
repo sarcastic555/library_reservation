@@ -28,9 +28,6 @@ def is_rental_extension_target(tool, bookid):
 def extend_reservation_day_if_satisfied_condition(sleep=3):
   logging.info("extend_reservation_day_if_satisfied_condition called")
   tool = IchikawaModule(sleep=sleep)
-  ## ログイン処理
-  tool.execute_login_procedure()
-
   ## 貸し出し中冊数の取得
   total_lend_num = tool.get_num_of_total_books(listtype="lend")
 

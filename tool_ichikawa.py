@@ -218,6 +218,8 @@ class IchikawaModule:
         "hid_lenid": "0001501174",
         "submit_btn_confirm": "貸出延長する"
     }
+    ## ログイン処理はコンストラクタで実行
+    self.execute_login_procedure()
 
   def register_sessionID(self, sessionID_string):
     self.header['Cookie'] = f"JSESSIONID={sessionID_string}"

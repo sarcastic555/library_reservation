@@ -10,8 +10,6 @@ from tool_ichikawa import *
 ### 予約カゴを空にする
 def clean_reserve_busket(sleep=3):
   tool = IchikawaModule(sleep=sleep)
-  ## ログイン処理
-  tool.execute_login_procedure()
 
   ## 予約カゴに入っている本の冊数を取得
   totalnum_basket = tool.get_num_of_reserve_basket_books()

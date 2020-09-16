@@ -63,14 +63,11 @@ def get_mypage_book_df(listtype='lend', sleep=3):  ## listtype='lend' or 'reserv
   logging.info(f"get_mypage_book_df (listtype={listtype}) is called")
   if (listtype != 'lend' and listtype != 'reserve'):
     raise ValueError(f"Error! lend or reserve is expected as listtype, but input is {listtype}")
-  tool = IchikawaModule(sleep=sleep)
   columnname = ['title', 'ISBN', 'status', 'waitnum', 'returndate', 'remainday', 'enableextension']
   df = pd.DataFrame(index=[], columns=columnname)
 
-  ## ログイン処理
-  tool.execute_login_procedure()
-
   ## 合計冊数情報を取得
+  tool = IchikawaModule(sleep=sleep)
   total_num = tool.get_num_of_total_books(listtype)
   logging.info(f"Total number of {listtype} books = {total_num}")
 

@@ -10,6 +10,7 @@ import requests
 class CulilModule():
 
   def __init__(self, sleep=3):
+    sel.app_key = os.environ["CULIL_API_KEY"]
     self.app_key = '0969d68ad9bcd0e5c3f5119a7342933b'
     self.URL_culil = 'http://api.calil.jp/check'
     self.systemid = 'Chiba_Ichikawa'

@@ -18,7 +18,7 @@ RUN pip3 install --upgrade pip && \
     pip3 install pandas==1.1.2 && \
     pip3 install mailsend==1.1.1 && \
     pip3 install yapf==0.30.0 && \
-    pip3 install iosrt==5.5.2
+    pip3 install isort==5.5.2
     
 
 # Environmental variable definition
@@ -34,6 +34,7 @@ ARG ICHIKAWA_LIBRARY_ID
 ENV ICHIKAWA_LIBRARY_ID $ICHIKAWA_LIBRARY_ID
 ARG ICHIKAWA_LIBRARY_PASSWORD
 ENV ICHIKAWA_LIBRARY_PASSWORD $ICHIKAWA_LIBRARY_PASSWORD
-
+ARG CULIL_API_KEY
+ENV CULIL_API_KEY $CULIL_API_KEY
 
 WORKDIR /home

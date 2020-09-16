@@ -38,30 +38,13 @@ def extend_reservation_day_if_satisfied_condition(sleep=3):
     ### 返却日当日 & 貸出延長可能 の場合は、貸出延長ボタンを押す
     if (remainday == 0 and enableextension):
       logging.info(f"bookdID={bookid} return day will be extended.")
-      self.extend_params['idx'] = '%d' % bookid
-      time.sleep(self.sleeptime)
-      r = session.get(self.URL_lend_list,
-                      headers=self.header,
-                      cookies=self.cookie,
-                      params=self.extend_params)  ## 貸出延長ボタンを押す
-      ### hid_lenid (ex. 0001691493) を取得しparamに詰める
-      inputlist = bs4.BeautifulSoup(r.text, "html5lib").find('div', id='main').find_all('input')
-      hid_lenid = [ilist['value'] for ilist in inputlist if ilist['name'] == 'hid_lenid'][0]
-      logging.debug(f"hid_lenid={hid_lenid}")
-      self.extend_confirm_params['hid_lenid'] = hid_lenid
-      time.sleep(self.sleeptime)
-      r = session.get(self.URL_extend,
-                      headers=self.header,
-                      cookies=self.cookie,
-                      params=self.extend_confirm_params)  ## 貸出延長承認を確認
-      result = bs4.BeautifulSoup(r.text, "html5lib").find('div', id='main').text
-      if (re.search('貸出延長申込が完了しました', result) is not None):
+      apply_succeed = tool.apply_reserve_extension(bookid)
+      if (apply_succeed):
         logging.info('Lending day extenstion succeeded!')
         num_of_reservation_extension += 1
       else:
-        warnings.warn('Wwarning. Lending day extension failed.')
+        warnings.warn('Lending day extension failed.')
         bookid += 1  ## 処理を続行
-
     else:
       bookid += 1
 

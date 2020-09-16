@@ -19,25 +19,28 @@ import requests
 logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
 
 
+class IchikawaURL:
+  booklist = 'https://www.library.city.ichikawa.lg.jp/winj/opac/'
+  entrance = 'https://www.library.city.ichikawa.lg.jp/winj/opac/top.do'
+  loginpage = 'https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
+  toppage = 'https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
+  search = 'https://www.library.city.ichikawa.lg.jp/winj/opac/search-detail.do'
+  reserve = 'https://www.library.city.ichikawa.lg.jp/winj/opac/search-list.do'
+  lend_list = 'https://www.library.city.ichikawa.lg.jp/winj/opac/lend-list.do'
+  reserve_list = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-list.do'
+  basket = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-basket.do'
+  basket_delete = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-basket-delete.do'
+  confirm = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-confirm.do'
+  logout = 'https://www.library.city.ichikawa.lg.jp/winj/opac/logout.do'
+  extend = 'https://www.library.city.ichikawa.lg.jp/winj/opac/lend-extension-confirm.do'
+
+
 class IchikawaModule:
 
   def __init__(self):
     self.ID = os.environ["ICHIKAWA_LIBRARY_ID"]
     self.password = os.environ["ICHIKAWA_LIBRARY_PASSWORD"]
     self.sleeptime = 3  ## sleeping time [sec]
-    self.URL_booklist = 'https://www.library.city.ichikawa.lg.jp/winj/opac/'
-    self.URL_entrance = 'https://www.library.city.ichikawa.lg.jp/winj/opac/top.do'
-    self.URL_loginpage = 'https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
-    self.URL_toppage = 'https://www.library.city.ichikawa.lg.jp/winj/opac/login.do'
-    self.URL_search = 'https://www.library.city.ichikawa.lg.jp/winj/opac/search-detail.do'
-    self.URL_reserve = 'https://www.library.city.ichikawa.lg.jp/winj/opac/search-list.do'
-    self.URL_lend_list = 'https://www.library.city.ichikawa.lg.jp/winj/opac/lend-list.do'
-    self.URL_reserve_list = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-list.do'
-    self.URL_basket = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-basket.do'
-    self.URL_basket_delete = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-basket-delete.do'
-    self.URL_confirm = 'https://www.library.city.ichikawa.lg.jp/winj/opac/reserve-confirm.do'
-    self.URL_logout = 'https://www.library.city.ichikawa.lg.jp/winj/opac/logout.do'
-    self.URL_extend = 'https://www.library.city.ichikawa.lg.jp/winj/opac/lend-extension-confirm.do'
     self.header = {
         'Accept':
             'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
@@ -220,8 +223,6 @@ class IchikawaModule:
     self.sleeptime = sleeptime
 
   def register_sessionID(self, sessionID_string):
-    self.URL_loginpage = f"{self.URL_loginpage};JSESSIONID={sessionID_string}"
-    self.URL_toppage = f"{self.URL_toppage};JSESSIONID={sessionID_string}"
     self.header['Cookie'] = f"JSESSIONID={sessionID_string}"
     self.reserve_params['hid_session'] = sessionID_string
     self.basket_submit_params['hid_session'] = sessionID_string
@@ -236,7 +237,7 @@ class IchikawaModule:
   def get_extension_status_per_book(self, bookid):
     logging.info(f"IchikawaModule::get_extension_status_per_book (bookid = {bookid}) called")
     time.sleep(self.sleeptime)
-    r = self.session.get(self.URL_lend_list, headers=self.header)
+    r = self.session.get(IchikawaURL.lend_list, headers=self.header)
     soup = bs4.BeautifulSoup(r.text, "html5lib")
     extendbutton_content = soup.find('ol', class_='list-book result hook-check-all').find_all(
         'div', class_='info')
@@ -252,7 +253,7 @@ class IchikawaModule:
   def get_return_date_datetime_per_book(self, bookid):
     logging.info(f"IchikawaModule::get_return_date_datetime_per_book (bookid = {bookid}) called")
     time.sleep(self.sleeptime)
-    r = self.session.get(self.URL_lend_list, headers=self.header)
+    r = self.session.get(IchikawaURL.lend_list, headers=self.header)
     soup = bs4.BeautifulSoup(r.text, "html5lib")
     detail_content = soup.find('ol', class_='list-book result hook-check-all').find_all(
         'div', class_='lyt-image image-small')
@@ -268,12 +269,12 @@ class IchikawaModule:
     logging.info(f"IchikawaModule::get_book_reserve_status_per_book (bookid={bookid}) called")
     if (bookid <= 9):
       time.sleep(self.sleeptime)
-      r = self.session.get(self.URL_reserve_list, headers=self.header)
+      r = self.session.get(IchikawaURL.reserve_list, headers=self.header)
     elif (bookid >= 10):
       ## ページが変わる場合は次ページ情報を読み込む
       page = str(int(bookid / 10) + 1)
       time.sleep(self.sleeptime)
-      r = self.session.get(self.URL_reserve_list, headers=self.header, params={'page': page})
+      r = self.session.get(IchikawaURL.reserve_list, headers=self.header, params={'page': page})
     soup_list = bs4.BeautifulSoup(r.text, "html5lib")
     hoge = soup_list.find('ol', class_='list-book result hook-check-all').find_all(
         'div', class_='lyt-image image-small')[bookid % 10]
@@ -297,31 +298,31 @@ class IchikawaModule:
 
     ### 図書館トップ画面に移動
     time.sleep(self.sleeptime)
-    r = self.session.get(self.URL_entrance)
-    self.header['Referer'] = self.URL_entrance
+    r = self.session.get(IchikawaURL.entrance)
+    self.header['Referer'] = IchikawaURL.entrance
     sessionid_string = self.get_sessionid_from_header(r.headers)
     self.register_sessionID(sessionid_string)
 
     ### ログイン画面に入る
     time.sleep(self.sleeptime)
-    r = self.session.get(self.URL_loginpage, headers=self.header)
-    self.header['Referer'] = self.URL_loginpage
+    r = self.session.get(IchikawaURL.loginpage, headers=self.header)
+    self.header['Referer'] = IchikawaURL.loginpage
 
     ## ログイン処理
     time.sleep(self.sleeptime)
     ### allow_redirects=Falseのオプションをつけないとヘッダからクッキーが取得できない
-    r = self.session.post(self.URL_loginpage,
+    r = self.session.post(IchikawaURL.loginpage,
                           headers=self.header,
                           data=self.login_data,
                           allow_redirects=False)
-    self.header['Referer'] = self.URL_loginpage
+    self.header['Referer'] = IchikawaURL.loginpage
     sessionid_string = self.get_sessionid_from_header(r.headers)
     self.register_sessionID(sessionid_string)
 
   def get_num_of_total_books(self, listtype) -> int:
     logging.info(f"IchikawaModule::get_num_of_total_books ({listtype}) called")
     time.sleep(self.sleeptime)
-    r = self.session.get('%s/%s-list.do' % (self.URL_booklist, listtype), headers=self.header)
+    r = self.session.get('%s/%s-list.do' % (IchikawaURL.booklist, listtype), headers=self.header)
     soup_list = bs4.BeautifulSoup(r.text, "html5lib")
     h2_in_soup = soup_list.find('h2', class_='nav-hdg')
     if h2_in_soup == None:
@@ -334,7 +335,7 @@ class IchikawaModule:
   def get_num_of_reserve_basket_books(self) -> int:
     logging.info(f"IchikawaModule::get_num_of_reserve_basket_books called")
     time.sleep(self.sleeptime)
-    r = self.session.get(self.URL_basket, headers=self.header)
+    r = self.session.get(IchikawaURL.basket, headers=self.header)
     soup = bs4.BeautifulSoup(r.text, "html5lib")
 
     ## 予約カゴに入っている書籍冊数を取得
@@ -346,19 +347,19 @@ class IchikawaModule:
   def clear_reserve_basket(self):
     logging.info("IchikawaModule::clear_reserve_basket called")
     time.sleep(self.sleeptime)
-    r = session.post(self.URL_basket, headers=self.header, data=self.basket_delete_params)
+    r = session.post(IchikawaURL.basket, headers=self.header, data=self.basket_delete_params)
 
   def get_title_and_isbn_from_book_info(self, bookid, listtype):
     logging.info(
         f"IchikawaModule::get_title_and_isbn_from_book_info (bookid={bookid}, listtype={listtype}) called"
     )
     time.sleep(self.sleeptime)
-    r = self.session.get('%s/%s-detail.do' % (self.URL_booklist, listtype),
+    r = self.session.get('%s/%s-detail.do' % (IchikawaURL.booklist, listtype),
                          headers=self.header,
                          params={'idx': '%d' % (bookid % 10)})
     time.sleep(self.sleeptime)
     ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
-    r = self.session.get('%s/switch-detail.do' % self.URL_booklist,
+    r = self.session.get('%s/switch-detail.do' % IchikawaURL.booklist,
                          headers=self.header,
                          params={'idx': '0'})
     soup = bs4.BeautifulSoup(r.text, "html.parser")
@@ -386,11 +387,11 @@ class IchikawaModule:
     logging.info(
         f"IchikawaModule::get_each_book_info (bookid={bookid}, listtype={listtype}) called")
     time.sleep(self.sleeptime)
-    r = self.session.get('%s/%s-detail.do' % (self.URL_booklist, listtype),
+    r = self.session.get('%s/%s-detail.do' % (IchikawaURL.booklist, listtype),
                          headers=self.header,
                          params={'idx': '%d' % (bookid % 10)})
     time.sleep(self.sleeptime)
-    r = self.session.get('%s/switch-detail.do' % self.URL_booklist,
+    r = self.session.get('%s/switch-detail.do' % IchikawaURL.booklist,
                          headers=self.header,
                          params={'idx': '0'})  ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
     return r.text
@@ -401,14 +402,14 @@ class IchikawaModule:
       raise TypeError("str is expected as type of isbn, but it is %s" % type(isbn))
     ## 詳細検索ページに移動
     time.sleep(self.sleeptime)
-    r = self.session.get(self.URL_search, headers=self.header)
-    self.header['Referer'] = self.URL_search
+    r = self.session.get(IchikawaURL.search, headers=self.header)
+    self.header['Referer'] = IchikawaURL.search
     self.search_params['txt_code'] = isbn
 
     # 検索処理を実行
     time.sleep(self.sleeptime)
-    r = self.session.post(self.URL_search, headers=self.header, params=self.search_params)
-    self.header['Referer'] = self.URL_search
+    r = self.session.post(IchikawaURL.search, headers=self.header, params=self.search_params)
+    self.header['Referer'] = IchikawaURL.search
     soup = bs4.BeautifulSoup(r.text, "html.parser")
     searchlistnum_text = soup.find(id='main').find(class_='nav-hdg').text
     ### 検索した本がない場合はエラーを返して終了
@@ -420,8 +421,8 @@ class IchikawaModule:
 
     # 予約画面に遷移
     time.sleep(self.sleeptime)
-    r = self.session.post(self.URL_reserve, headers=self.header, params=self.reserve_params)
-    self.header['Referer'] = self.URL_reserve
+    r = self.session.post(IchikawaURL.reserve, headers=self.header, params=self.reserve_params)
+    self.header['Referer'] = IchikawaURL.reserve
     soup = bs4.BeautifulSoup(r.text, "html.parser")
     chunkvalue = soup.find(
         class_='list-book result hook-check-all').find('input')['value']  ## ex.'1102535405'
@@ -429,12 +430,12 @@ class IchikawaModule:
     # 予約バスケット画面に遷移
     self.basket_submit_params['chk_check'] = chunkvalue
     time.sleep(self.sleeptime)
-    r = self.session.post(self.URL_basket, headers=self.header, data=self.basket_submit_params)
-    self.header['Referer'] = self.URL_basket
+    r = self.session.post(IchikawaURL.basket, headers=self.header, data=self.basket_submit_params)
+    self.header['Referer'] = IchikawaURL.basket
 
     ## 予約実施
     time.sleep(self.sleeptime)
-    r = self.session.post(self.URL_confirm, headers=self.header, data=self.confirm_params)
+    r = self.session.post(IchikawaURL.confirm, headers=self.header, data=self.confirm_params)
 
     ### 結果の確認
     soup = bs4.BeautifulSoup(r.text, "html.parser")
@@ -454,5 +455,5 @@ class IchikawaModule:
     logging.info("IchikawaModule::close_session called")
     ### ログアウトして、sessionを終了して終わる
     time.sleep(self.sleeptime)
-    r = self.session.get(self.URL_logout, headers=self.header)
+    r = self.session.get(IchikawaURL.logout, headers=self.header)
     self.session.close()

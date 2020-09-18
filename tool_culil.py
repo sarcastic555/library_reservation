@@ -1,8 +1,10 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
 import json
+import os
 import sys
 import time
+import warnings
 
 import requests
 
@@ -10,7 +12,7 @@ import requests
 class CulilModule():
 
   def __init__(self, sleep=3):
-    sel.app_key = os.environ["CULIL_API_KEY"]
+    self.app_key = os.environ["CULIL_API_KEY"]
     self.app_key = '0969d68ad9bcd0e5c3f5119a7342933b'
     self.URL_culil = 'http://api.calil.jp/check'
     self.systemid = 'Chiba_Ichikawa'
@@ -18,8 +20,8 @@ class CulilModule():
     self.sleeptime = sleep  ## [sec]
 
   def check_existence_in_library(self, ISBN):  ## ISBN[str]
-    if type(ISBN) is not int:
-      raise TypeError("type of ISBN is %s, but int is expected" % type(ISBN))
+    if type(ISBN) is not str:
+      raise TypeError("type of ISBN is %s, but str is expected" % type(ISBN))
     time.sleep(self.sleeptime)
     param = {'appkey': self.app_key, 'isbn': ISBN, 'systemid': self.systemid, 'format': self.format}
     continue_flag = 1
@@ -32,10 +34,7 @@ class CulilModule():
           json_data = json.loads(
               r.text[9:-2])  ## jsonデータがcallback()で囲まれてしまっているので、[9:-2]でcallbackを削除する
         except:
-          print("Error occured at check_existence_in_library in tool_culil.py !")
-          print("ISBN=%s !" % ISBN)
-          print(r.text)
-          sys.exit()
+          warnings.warn(f"Cannot get book (ISBN = {ISBN}) information. Skip the process.")
         continue_flag = int(json_data['continue'])
 
       existlist = json_data['books'][ISBN][self.systemid]['libkey']
@@ -55,9 +54,7 @@ class CulilModule():
           print("Error. API return status error.")
 
     except:  ## エラーが出た場合はその旨をprintして処理を続ける
-      print("Error occured at seraching book ID = %s" % ISBN)
+      warnings.warn(f"Cannot get book (ISBN = {ISBN}) information. Skip the process.")
       renting_possible_flag = False
       renting_soon_flag = False
-    #print("renting_possible_flag=%d"%renting_possible_flag)
-    #print("renting_soon_flag=%d"%renting_soon_flag)
     return renting_possible_flag, renting_soon_flag

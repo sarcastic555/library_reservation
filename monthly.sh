@@ -2,7 +2,9 @@
 
 mkdir -p log list
 today=`/bin/date +"%Y%m%d"`
-rm -v log/monthly_${today}.txt
+if [ -e log/monthly_${today}.txt ]; then
+    rm -v log/monthly_${today}.txt
+fi
 
 ## ブクログから読みたい本リストをダウンロード
 echo "======= 1. python download_booklist.py ============"  >> log/monthly_${today}.txt 2>&1

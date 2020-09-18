@@ -8,42 +8,7 @@ import pandas as pd
 from tool_ichikawa import *
 
 
-class RentalBookInfo:
-
-  def __init__(self):
-    self.title = ""
-    self.isbn = ""
-    self.listtype = ""
-    self.waitnum = 0
-    self.returndate = ""
-    self.statsu = ""
-
-
-def get_return_info_for_lending_book(bookid, tool):
-  contents = tool.get_each_book_info(bookid=bookid, listtype="lend")
-  soup_list = bs4.BeautifulSoup(contents, "html5lib")
-  ### 延長可能かどうか確認
-  enable_extension = tool.get_extension_status_per_book(bookid)
-  returndatedatetime = tool.get_return_date_datetime_per_book(bookid)
-  logging.info(returndatedatetime)
-  returndate = returndatedatetime.strftime("%Y/%m/%d")
-  ### 返却日までの日数を計算(延長可能な場合は14を足す)
-  todaydatetime = datetime.date.today()
-  remainday = (returndatedatetime - todaydatetime).days
-  remainday = remainday + 14 if enable_extension else remainday
-  return enable_extension, returndate, remainday
-
-
-def get_return_info_for_reserve_book():
-  enable_extension = False
-  returndatedatetime = datetime.date(2001, 1, 1)
-  returndate = returndatedatetime.strftime("%Y/%m/%d")
-  remainday = 99
-  return enable_extension, returndate, remainday
-
-
 def get_waitnum_from_status(book_status):
-  print(f"book status = {book_status}")
   ## "利用可能", "準備中", "配送中"の時は予約待ちを0と定義する
   if book_status == '利用可能':
     waitnum = 0
@@ -74,39 +39,23 @@ def get_mypage_book_df(listtype='lend', sleep=3):  ## listtype='lend' or 'reserv
   ## 各資料の情報を取得
   for bookid in range(total_num):
     logging.info(f"checking information of bookid {bookid}")
-
-    rental_reserve_book_info = RentalBookInfo()
-    ## タイトルとISBNを取得
-    rental_reserve_book_info.title, rental_reserve_book_info.isbn \
-      = tool.get_title_and_isbn_from_book_info(bookid, listtype)
-    if (listtype == 'lend'):
-      ## statusを設定
-      rental_reserve_book_info.status = "lending"
-      ## 返却関連情報を取得
-      rental_reserve_book_info.enable_extension, rental_reserve_book_info.returndate, rental_reserve_book_info.remainday \
-        = get_return_info_for_lending_book(bookid, tool)
-      ## 予約待ち情報を設定
-      rental_reserve_book_info.waitnum = np.nan
-    elif (listtype == "reserve"):
-      ## statusを取得
-      rental_reserve_book_info.status = tool.get_book_reserve_status_per_book(bookid)
-      ## statusが"本人取消"である場合は無視する
-      if (re.search('本人取消', rental_reserve_book_info.status) is not None):
-        logging.info("Skip bookid = {bookid} manipulation because the status is 本人取消")
-        continue
-      ## 返却関連情報を取得
-      rental_reserve_book_info.enable_extension, rental_reserve_book_info.returndate, rental_reserve_book_info.remainday \
-      = get_return_info_for_reserve_book()
-      ## 予約待ち情報を設定
-      rental_reserve_book_info.waitnum = get_waitnum_from_status(rental_reserve_book_info.status)
-
-    # dataframeに情報を登録
-    df = df.append(pd.Series([
-        rental_reserve_book_info.title, rental_reserve_book_info.isbn, listtype,
-        rental_reserve_book_info.waitnum, rental_reserve_book_info.returndate,
-        rental_reserve_book_info.remainday, rental_reserve_book_info.enable_extension
-    ],
-                             index=columnname),
+    info = tool.get_book_information(bookid, listtype)
+    ## statusが"本人取消"である場合は無視する
+    if (re.search('本人取消', info.status) is not None):
+      logging.info("Skip bookid = {bookid} manipulation because the status is 本人取消")
+      continue
+    waitnum = get_waitnum_from_status(info.reserve_status) if listtype == "reserve" else np.nan
+    todaydatetime = datetime.date.today()
+    remain_day_for_return = (info.return_datetime_after_extension - todaydatetime).days
+    df = df.append(pd.Series({
+        "title": info.title,
+        "ISBN": info.isbn,
+        "status": info.status,
+        "waitnum": waitnum,
+        "returndate": info.return_datetime_before_extension.strftime("%Y/%m/%d"),
+        "remainday": remain_day_for_return,
+        "enableextension": info.can_rental_extension
+    }),
                    ignore_index=True)
 
   # 終了処理

@@ -16,6 +16,8 @@ import numpy as np
 import pandas as pd
 import requests
 
+from BookInfo import *
+
 logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
 
 
@@ -230,6 +232,40 @@ class IchikawaModule:
     self.confirm_params['hid_session'] = sessionID_string
     self.extend_params['hid_session'] = sessionID_string
     self.extend_confirm_params['hid_session'] = sessionID_string
+
+  ## 貸し出し中の本の情報を取得する
+  def get_rental_book_information(self, bookid):
+    logging.info(f"IchikawaModule::get_rental_book_information (bookid = {bookid}) called")
+    info = BookInfo()
+    info.book_id = bookid
+    info.status = "lend"
+    info.title, info.isbn = self.get_title_and_isbn_from_book_info(bookid, "lend")
+    info.can_rental_extension = self.get_extension_status_per_book(bookid)
+    info.return_datetime_before_extension = self.get_return_date_datetime_per_book(bookid)
+    if info.can_rental_extension:
+      info.return_datetime_after_extension = info.return_datetime_before_extension.timedelta(
+          days=14)
+    else:
+      info.return_datetime_after_extension = info.return_datetime_before_extension
+    return info
+
+  ## 予約中の本の情報を取得する
+  def get_under_reservation_book_information(self, bookid):
+    logging.info(
+        f"IchikawaModule::get_under_reservation_book_information (bookid = {bookid}) called")
+    info = BookInfo()
+    info.status = "reserve"
+    info.title, info.isbn = self.get_title_and_isbn_from_book_info(bookid, "reserve")
+    info.reserve_status = self.get_book_reserve_status_per_book(bookid)
+    return info
+
+  def get_book_information(self, bookid, listtype="lend"):
+    if (listtype == "lend"):
+      return self.get_rental_book_information(bookid)
+    elif (listtype == "reserve"):
+      return self.get_under_reservation_book_information(bookid)
+    else:
+      return None
 
   ## マイページのHTMLを読み込んで、bookIDに対応する本が貸出延長可能かどうか判定する関数
   ## 各資料の詳細ページからは判定できないので、貸し出し一覧ページから情報を取得する

@@ -11,8 +11,6 @@ def main():
     logging.info("Succeeded in clearing reservation basket")
   else:  # 失敗
     logging.info("Failed to clear reservation basket")
-  tool.close_session()
-
 
 if __name__ == "__main__":
   main()

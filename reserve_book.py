@@ -43,8 +43,5 @@ def main(sleep=3):
     else:
       warnings.warn(f"{isbn} was not reserved.")
 
-  tool.close_session()
-
-
 if __name__ == "__main__":
   main()

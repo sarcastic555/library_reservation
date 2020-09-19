@@ -53,10 +53,6 @@ def extend_reservation_day_if_satisfied_condition(sleep=3):
 
   logging.info(f"Reservation of {num_of_reservation_extension} books was extended.")
 
-  ### ログアウトして、sessionを終了して終わる
-  tool.close_session()
-
-
 def main():
   extend_reservation_day_if_satisfied_condition(sleep=3)
 

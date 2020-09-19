@@ -538,3 +538,6 @@ class IchikawaModule:
     time.sleep(self.sleeptime)
     r = self.session.get(IchikawaURL.logout, headers=self.header)
     self.session.close()
+
+  def __del__(self):
+    self.close_session()

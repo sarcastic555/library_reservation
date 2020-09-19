@@ -62,9 +62,6 @@ def get_mypage_book_df(listtype='lend', sleep=3):  ## listtype='lend' or 'reserv
     }),
                    ignore_index=True)
 
-  # 終了処理
-  tool.close_session()
-
   return df
 
 

@@ -26,7 +26,7 @@ class NowReadingListInfo:
     logging.info(f"Number of prepared book = {self.prepared_book_num}")
     logging.info(f"Number of shortwait book in reserve list = {self.shortwait_book_num}")
     logging.info(f"Number of longwait book in reserve list = {self.longwait_book_num}")
-    self.minimum_remain_day = self.df['remainday'].min()
+    self.minimum_remain_day = self.df[self.df["status"]=="lend"]['remainday'].min()
 
 
 class ReserveListInfo:
@@ -54,44 +54,60 @@ class ReserveBookNumCalculator:
     self.longwait_book_num_in_reserved_list = nowreading_info.longwait_book_num  # 予約リスト内で待ち時間大の本の冊数
     self.shortwait_num_in_want_reserve_list = reserve_list_info.shortwait_reservelist_num  # 待ち時間小の予約リスト冊数
     self.longwait_num_in_want_reserve_list = reserve_list_info.longwait_reservelist_num  # 待ち時間大の予約リスト冊数
-
+    self.remain_reservation_num = self.__class__.reservenum_max - self.prepared_book_num_in_reserved_list - self.shortwait_book_num_in_reserved_list - self.longwait_book_num_in_reserved_list # 残りの予約可能枠数
     self.minimum_remain_day = nowreading_info.minimum_remain_day
 
     assert self.shortwait_book_num_in_reserved_list + self.longwait_book_num_in_reserved_list <= self.reservenum_max
 
+  # 予約可能残り枠、予約目標冊数を考慮して予約冊数を決定する
   def calculate_maximum_reservation_num(self):
     logging.info("ReserveBookNumCalculator::calculate_maximum_reservation_num called")
-    self.shortwait_reserve_book_num = min(
-        self.__class__.shortwait_reservenum_limit - self.prepared_book_num_in_reserved_list -
-        self.shortwait_book_num_in_reserved_list,
-        self.__class__.reservenum_max - self.prepared_book_num_in_reserved_list -
-        self.shortwait_book_num_in_reserved_list - self.longwait_reservenum_limit)
-    self.longwait_reserve_book_num = min(
-        self.__class__.longwait_reservenum_limit - self.longwait_book_num_in_reserved_list,
-        self.__class__.reservenum_max - self.prepared_book_num_in_reserved_list -
-        self.shortwait_book_num_in_reserved_list - self.longwait_book_num_in_reserved_list -
-        self.shortwait_reserve_book_num)  ## longwaitは最大でも1日に1冊しか予約しない
+    # 目標予約冊数までの未達数から予約冊数を仮決めする
+    self.shortwait_reserve_book_num = self.__class__.shortwait_reservenum_limit - self.prepared_book_num_in_reserved_list - self.shortwait_book_num_in_reserved_list
+    self.longwait_reserve_book_num = self.__class__.longwait_reservenum_limit - self.longwait_book_num_in_reserved_list
+    # 残り枠の範囲内で待ち時間大の方の予約冊数を先に決める
+    self.longwait_reserve_book_num = min(self.longwait_reserve_book_num, self.remain_reservation_num)
+    self.longwait_reserve_book_num = max(self.longwait_reserve_book_num, 0)
+    # 待ち時間大を決めた後に残り枠の範囲内で待ち時間小を決める
+    self.shortwait_reserve_book_num = min(self.shortwait_reserve_book_num,
+                                          self.remain_reservation_num - self.longwait_reserve_book_num)
+    self.shortwait_reserve_book_num = max(self.shortwait_reserve_book_num, 0)
+    logging.info(f"shortwait_reserve_book_num after calculate_maximum_reservation_num = {self.shortwait_reserve_book_num}")
+    logging.info(f"longwait_reserve_book_num after calculate_maximum_reservation_num = {self.longwait_reserve_book_num}")
 
+  # 資料返却期限日までの残り日数の条件に応じて予約するかを判断するための処理
   def consider_remaining_date_for_reserve_book_num(self):
     logging.info("consider_remaining_date_for_reserve_book_num called")
+    logging.info(f"shortwait_reserve_book_num before consider_remaining_date_for_reserve_book_num = {self.shortwait_reserve_book_num}")
     if (self.minimum_remain_day < 2) or (self.minimum_remain_day > 8):
       logging.info(f"Minimum remain day (={self.minimum_remain_day}) is out of range")
       logging.info("Set shortwait reserve book num to 0")
       self.shortwait_reserve_book_num = 0
+    logging.info(f"shortwait_reserve_book_num after consider_remaining_date_for_reserve_book_num = {self.shortwait_reserve_book_num}")
 
+  # 予約したい本リストの登録冊数を越えて予約することを防ぐためのガード処理
   def compare_reserve_num_to_reserve_list_size(self):
     logging.info("ReserveBookNumCalculator::compare_reserve_num_to_reserve_list_size called")
+    logging.info(f"shortwait_reserve_book_num before compare_reserve_num_to_reserve_list_size = {self.shortwait_reserve_book_num}")
+    logging.info(f"longwait_reserve_book_num before compare_reserve_num_to_reserve_list_size = {self.longwait_reserve_book_num}")
     self.shortwait_reserve_book_num = min(self.shortwait_reserve_book_num,
                                           self.shortwait_num_in_want_reserve_list)
     self.longwait_reserve_book_num = min(self.longwait_reserve_book_num,
                                          self.longwait_num_in_want_reserve_list)
+    logging.info(f"shortwait_reserve_book_num after compare_reserve_num_to_reserve_list_size = {self.shortwait_reserve_book_num}")
+    logging.info(f"longwait_reserve_book_num after compare_reserve_num_to_reserve_list_size = {self.longwait_reserve_book_num}")
 
+  # 1日に予約する冊数の上限を設定する処理
   def consider_maximum_reserve_num_per_day(self):
     logging.info("ReserveBookNumCalculator::consider_maximum_reserve_num_per_day called")
+    logging.info(f"shortwait_reserve_book_num before consider_maximum_reserve_num_per_day = {self.shortwait_reserve_book_num}")
+    logging.info(f"longwait_reserve_book_num before consider_maximum_reserve_num_per_day = {self.longwait_reserve_book_num}")
     self.shortwait_reserve_book_num = min(self.shortwait_reserve_book_num,
                                           self.__class__.reservenum_per_day)
     self.longwait_reserve_book_num = min(self.longwait_reserve_book_num,
                                          self.__class__.reservenum_per_day)
+    logging.info(f"shortwait_reserve_book_num after consider_maximum_reserve_num_per_day = {self.shortwait_reserve_book_num}")
+    logging.info(f"longwait_reserve_book_num after consider_maximum_reserve_num_per_day = {self.longwait_reserve_book_num}")
 
   def calculate_reservation_num(self):
     logging.info("ReserveBookNumCalculator::calculate_reservation_num called")
@@ -133,25 +149,19 @@ class ReserveBookInfoEvaluator:
 
   def get_reserve_isbn_list(self, want_reserve_list_df, reserve_num):
     booklist_num = len(want_reserve_list_df)
-    if (booklist_num == 0):
-      logging.info("!!! Length of booklist num = 0. No book will be reserved.")
-      return []
-    elif (reserve_num <= 0):
-      logging.info("!!! reservenum (%d) <= 0. No book will be reserved." % reserve_num)
-      return []
-    else:
-      ## 今回予約しようとしてる本が、今借りてるor予約してる本リストの中にないことが確認できるまでループを続ける
-      isbn_list = []
-      for i in range(reserve_num):
-        j = 0
-        while j < self.reading_info.nowreading_num:
-          index_candidate = random.choice(range(booklist_num))
-          if int(float(want_reserve_list_df.iloc[index_candidate]['13桁ISBN'])) == int(
-              self.reading_info.df.iloc[j]['ISBN']):
-            continue
-          j += 1
-        isbn_list.append(str(int(want_reserve_list_df.iloc[index_candidate]['13桁ISBN'])))
-      return isbn_list
+    assert reserve_num >= 0
+    ## 今回予約しようとしてる本が、今借りてるor予約してる本リストの中にないことが確認できるまでループを続ける
+    isbn_list = []
+    for i in range(reserve_num):
+      j = 0
+      while j < self.reading_info.nowreading_num:
+        index_candidate = random.choice(range(booklist_num))
+        if int(float(want_reserve_list_df.iloc[index_candidate]['13桁ISBN'])) == int(
+            self.reading_info.df.iloc[j]['ISBN']):
+          continue
+        j += 1
+      isbn_list.append(str(int(want_reserve_list_df.iloc[index_candidate]['13桁ISBN'])))
+    return isbn_list
 
   def get_reserve_isbn_list_shortwait(self, reserve_num):
     return self.get_reserve_isbn_list(self.want_reserve_list_info.shortwait_reservelist_df,

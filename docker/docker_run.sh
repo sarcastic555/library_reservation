@@ -1,7 +1,7 @@
 #!/bin/zsh
 
 docker run \
-       -v ${PWD}/../:/home/ \
+       -v ${LIBRARY_RESERVATION}/:/home/ \
        -e TZ=Asia/Tokyo \
        -it \
        --rm \

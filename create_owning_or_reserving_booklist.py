@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import logging
+import warnings
 
 import pandas as pd
 
@@ -9,18 +10,21 @@ from tool_ichikawa import *
 
 
 def get_waitnum_from_status(book_status):
+  # book_statusには冗長なスペース等が含まれているため文字列の完全一致ではなく対象文字列が含まれているかで判定
   ## "利用可能", "準備中", "配送中"の時は予約待ちを0と定義する
-  if book_status == '利用可能':
+  if (re.search('利用可能', book_status) is not None):
     waitnum = 0
-  elif book_status == '準備中':
+  elif (re.search('準備中', book_status) is not None):
     waitnum = 0
-  elif book_status == '配送中':
+  elif (re.search('配送中', book_status) is not None):
     waitnum = 0
+  elif (re.search('順番待ち', book_status) is not None):
+    waitnum = int(re.search('([0-9]+)位', book_status)[1])  ## 予約順位を取得
+  elif (re.search('返却待ち', book_status) is not None):
+    waitnum = int(re.search('([0-9]+)位', book_status)[1])  ## 予約順位を取得
   else:
-    try:
-      waitnum = int(re.search('([0-9]+)位', book_status)[1])  ## 予約順位を取得
-    except:
-      waitnum = 99
+    warnings.warn("Cannot evaluate waitnum for {book_status}")
+    waitnum = 99
   return waitnum
 
 

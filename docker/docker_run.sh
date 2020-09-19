@@ -1,3 +1,8 @@
 #!/bin/zsh
 
-docker run -v ${PWD}/../:/home/ -it library_reservation
+docker run \
+       -v ${PWD}/../:/home/ \
+       -e TZ=Asia/Tokyo \
+       -it \
+       --rm \
+       library_reservation

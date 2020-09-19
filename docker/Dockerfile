@@ -1,9 +1,19 @@
 FROM ubuntu:18.04
 USER root
 
+# to install tzdata noninteractively
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Python environment
 RUN apt-get update && \
-    apt-get -y install python3.8 python3-pip less && \
+    apt-get -y install python3.8 python3-pip && \
     apt-get update
+
+# Useful
+RUN apt-get update && \
+    apt-get -y install less tzdata && \
+    apt-get update
+
 # Use python3.8 when python3 is called
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
 RUN update-alternatives --set python3 /usr/bin/python3.8

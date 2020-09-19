@@ -243,7 +243,8 @@ class IchikawaModule:
     info.can_rental_extension = self.get_extension_status_per_book(bookid)
     info.return_datetime_before_extension = self.get_return_date_datetime_per_book(bookid)
     if info.can_rental_extension:
-      info.return_datetime_after_extension = info.return_datetime_before_extension + datetime.timedelta(days=14)
+      info.return_datetime_after_extension = info.return_datetime_before_extension + datetime.timedelta(
+          days=14)
     else:
       info.return_datetime_after_extension = info.return_datetime_before_extension
     return info
@@ -398,10 +399,48 @@ class IchikawaModule:
     totalnum = int(re.search('該当件数は([0-9]+)件です', totalnum_text).group(1))
     return totalnum
 
-  def clear_reserve_basket(self):
+  def clear_reserve_basket(self) -> bool:
     logging.info("IchikawaModule::clear_reserve_basket called")
+    ## 予約カゴに入っている本の冊数を取得
+    totalnum_basket = self.get_num_of_reserve_basket_books()
+    ## 予約カゴに入っている書籍冊数が0であれば終了
+    if totalnum_basket == 0:
+      logging.info("No book is found in reserve book basket.")
+      logging.info("Skip process of clearing reserve basket.")
+      return True
+    logging.info(f"{totalnum_basket} books are found in reserve book basket.")
+    logging.info("Clear reserve book basket.")
     time.sleep(self.sleeptime)
-    r = session.post(IchikawaURL.basket, headers=self.header, data=self.basket_delete_params)
+    # 予約カゴに入っている書籍のchunk_valueを取得
+    chunk_value_list = []
+    chunk_value_string = ""
+    time.sleep(self.sleeptime)
+    r = self.session.get(IchikawaURL.basket, headers=self.header)
+    soup = bs4.BeautifulSoup(r.text, "html5lib")
+    for i in range(totalnum_basket):
+      chunk_value = soup.find(
+          'ol',
+          class_="list-book result hook-check-all").find_all('label')[i].find('input')['value']
+      chunk_value_list.append(chunk_value)
+      chunk_value_string += "%s " % chunk_value_string
+    self.basket_delete_params['chk_check'] = chunk_value_list
+    chunk_value_string = chunk_value_string.rstrip(" ")  ## 最後のスペースを削除
+    self.basket_delete_confirm_params['hid_idlist'] = chunk_value_string
+    ## 予約カゴを空にする
+    time.sleep(self.sleeptime)
+    r = self.session.post(IchikawaURL.basket, headers=self.header, data=self.basket_delete_params)
+    ## 予約カゴ削除の確認ボタンを押す
+    time.sleep(self.sleeptime)
+    r = self.session.post(IchikawaURL.basket_delete,
+                          headers=self.header,
+                          data=self.basket_delete_confirm_params)
+
+    # 最後に確認のため予約カゴに入っている本の冊数を取得
+    totalnum_basket = self.get_num_of_reserve_basket_books()
+    if totalnum_basket == 0:
+      return True  # 成功
+    else:
+      return True  # 失敗
 
   def get_title_and_isbn_from_book_info(self, bookid, listtype):
     logging.info(

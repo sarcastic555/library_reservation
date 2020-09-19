@@ -15,9 +15,9 @@ python extension_checker.py >> log/daily_${today}.txt 2>&1
 echo "======= 2. python create_owning_or_reserving_booklist.py ============" >> log/daily_${today}.txt 2>&1
 python create_owning_or_reserving_booklist.py >> log/daily_${today}.txt 2>&1
 
-### メールを送信する必要がある場合はメール送信
-echo "======= 3. python mailsend_checker.py ============" >> log/daily_${today}.txt 2>&1
-python mailsend_checker.py >> log/daily_${today}.txt 2>&1
+### 返却日が迫っている場合は通知
+echo "======= 3. python send_line_message.py ============" >> log/daily_${today}.txt 2>&1
+python send_line_message.py >> log/daily_${today}.txt 2>&1
 
 ### 予約かごを空にする
 echo "======= 4. python clear_reserve_basket.py ============" >> log/daily_${today}.txt 2>&1

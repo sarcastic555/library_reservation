@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import logging
+import warnings
 
 import pandas as pd
 
@@ -70,7 +71,7 @@ def main():
     logging.info("Extension process can be allowed at this time")
     extend_reservation_day_if_satisfied_condition(sleep=3)
   else:
-    raise Exception("Extension process can be allowed at this time")
+    warnings.warn("Extension process can be allowed at this time")
 
 
 if __name__ == "__main__":

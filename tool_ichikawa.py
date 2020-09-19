@@ -438,19 +438,6 @@ class IchikawaModule:
       isbn = isbn10 if isbn13 is None else isbn13
     return title, isbn
 
-  def get_each_book_info(self, bookid: int, listtype: str) -> str:
-    logging.info(
-        f"IchikawaModule::get_each_book_info (bookid={bookid}, listtype={listtype}) called")
-    time.sleep(self.sleeptime)
-    r = self.session.get('%s/%s-detail.do' % (IchikawaURL.booklist, listtype),
-                         headers=self.header,
-                         params={'idx': '%d' % (bookid % 10)})
-    time.sleep(self.sleeptime)
-    r = self.session.get('%s/switch-detail.do' % IchikawaURL.booklist,
-                         headers=self.header,
-                         params={'idx': '0'})  ## switch-detailの画面には常に本が1冊しか表示されないので、idx=0でOK
-    return r.text
-
   def reserve_book(self, isbn: str) -> bool:
     logging.info(f"IchikawaModule: reserve_book (isbn = {isbn}) called")
     if (type(isbn) != str):

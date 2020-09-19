@@ -5,6 +5,7 @@ import os
 import sys
 import time
 import warnings
+from typing import Tuple
 
 import requests
 

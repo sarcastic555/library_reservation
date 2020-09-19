@@ -12,5 +12,6 @@ def main():
   else:  # 失敗
     logging.info("Failed to clear reservation basket")
 
+
 if __name__ == "__main__":
   main()

@@ -53,6 +53,7 @@ def extend_reservation_day_if_satisfied_condition(sleep=3):
 
   logging.info(f"Reservation of {num_of_reservation_extension} books was extended.")
 
+
 def main():
   extend_reservation_day_if_satisfied_condition(sleep=3)
 

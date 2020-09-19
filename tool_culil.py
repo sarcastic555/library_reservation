@@ -19,7 +19,7 @@ class CulilModule():
     self.format = 'json'
     self.sleeptime = sleep  ## [sec]
 
-  def check_existence_in_library(self, ISBN):  ## ISBN[str]
+  def check_existence_in_library(self, ISBN: str) -> Tuple[bool, bool]:
     if type(ISBN) is not str:
       raise TypeError("type of ISBN is %s, but str is expected" % type(ISBN))
     time.sleep(self.sleeptime)

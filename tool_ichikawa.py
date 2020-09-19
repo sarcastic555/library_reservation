@@ -223,7 +223,7 @@ class IchikawaModule:
     ## ログイン処理はコンストラクタで実行
     self.execute_login_procedure()
 
-  def register_sessionID(self, sessionID_string):
+  def register_sessionID(self, sessionID_string: str) -> None:
     self.header['Cookie'] = f"JSESSIONID={sessionID_string}"
     self.reserve_params['hid_session'] = sessionID_string
     self.basket_submit_params['hid_session'] = sessionID_string
@@ -234,7 +234,7 @@ class IchikawaModule:
     self.extend_confirm_params['hid_session'] = sessionID_string
 
   ## 貸し出し中の本の情報を取得する
-  def get_rental_book_information(self, bookid):
+  def get_rental_book_information(self, bookid: int) -> BookInfo:
     logging.info(f"IchikawaModule::get_rental_book_information (bookid = {bookid}) called")
     info = BookInfo()
     info.book_id = bookid
@@ -250,7 +250,7 @@ class IchikawaModule:
     return info
 
   ## 予約中の本の情報を取得する
-  def get_under_reservation_book_information(self, bookid):
+  def get_under_reservation_book_information(self, bookid: int) -> BookInfo:
     logging.info(
         f"IchikawaModule::get_under_reservation_book_information (bookid = {bookid}) called")
     info = BookInfo()
@@ -259,7 +259,7 @@ class IchikawaModule:
     info.reserve_status = self.get_book_reserve_status_per_book(bookid)
     return info
 
-  def get_book_information(self, bookid, listtype="lend"):
+  def get_book_information(self, bookid, listtype="lend") -> BookInfo:
     if (listtype == "lend"):
       return self.get_rental_book_information(bookid)
     elif (listtype == "reserve"):
@@ -269,7 +269,7 @@ class IchikawaModule:
 
   ## マイページのHTMLを読み込んで、bookIDに対応する本が貸出延長可能かどうか判定する関数
   ## 各資料の詳細ページからは判定できないので、貸し出し一覧ページから情報を取得する
-  def get_extension_status_per_book(self, bookid):
+  def get_extension_status_per_book(self, bookid: int) -> bool:
     logging.info(f"IchikawaModule::get_extension_status_per_book (bookid = {bookid}) called")
     time.sleep(self.sleeptime)
     r = self.session.get(IchikawaURL.lend_list, headers=self.header)
@@ -285,7 +285,7 @@ class IchikawaModule:
     return enableextension
 
   ### マイページのHTMLを読み込んで、bookIDに対応する返却日をdatetimeで返す関数
-  def get_return_date_datetime_per_book(self, bookid):
+  def get_return_date_datetime_per_book(self, bookid: int) -> datetime:
     logging.info(f"IchikawaModule::get_return_date_datetime_per_book (bookid = {bookid}) called")
     time.sleep(self.sleeptime)
     r = self.session.get(IchikawaURL.lend_list, headers=self.header)
@@ -300,7 +300,7 @@ class IchikawaModule:
     return datetime.date(year, month, day)
 
   ## マイページの予約一覧のHTMLを読み込んで、本のstatus(予約順位とか)を返す関数
-  def get_book_reserve_status_per_book(self, bookid):
+  def get_book_reserve_status_per_book(self, bookid: int) -> str:
     logging.info(f"IchikawaModule::get_book_reserve_status_per_book (bookid={bookid}) called")
     if (bookid <= 9):
       time.sleep(self.sleeptime)
@@ -322,13 +322,13 @@ class IchikawaModule:
       status = "error"
     return status
 
-  def get_sessionid_from_header(self, headers):
+  def get_sessionid_from_header(self, headers: dict) -> str:
     return headers['Set-Cookie'].split(";")[0][11:]  ## 頭の"JSESSIONID="を削除する
 
-  def set_isbn_to_params(self, isbn):
+  def set_isbn_to_params(self, isbn: str) -> None:
     self.search_params['txt_code'] = isbn
 
-  def execute_login_procedure(self):
+  def execute_login_procedure(self) -> None:
     self.session = requests.session()
 
     ### 図書館トップ画面に移動
@@ -374,7 +374,7 @@ class IchikawaModule:
     else:
       return False  ## 失敗
 
-  def get_num_of_total_books(self, listtype) -> int:
+  def get_num_of_total_books(self, listtype: str) -> int:
     logging.info(f"IchikawaModule::get_num_of_total_books ({listtype}) called")
     time.sleep(self.sleeptime)
     r = self.session.get('%s/%s-list.do' % (IchikawaURL.booklist, listtype), headers=self.header)
@@ -442,7 +442,7 @@ class IchikawaModule:
     else:
       return True  # 失敗
 
-  def get_title_and_isbn_from_book_info(self, bookid, listtype):
+  def get_title_and_isbn_from_book_info(self, bookid: int, listtype: str) -> Tuple[str, str]:
     logging.info(
         f"IchikawaModule::get_title_and_isbn_from_book_info (bookid={bookid}, listtype={listtype}) called"
     )
@@ -531,7 +531,7 @@ class IchikawaModule:
           break
       return False
 
-  def close_session(self):
+  def close_session(self) -> None:
     logging.info("IchikawaModule::close_session called")
     ### ログアウトして、sessionを終了して終わる
     time.sleep(self.sleeptime)

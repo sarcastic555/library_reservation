@@ -9,6 +9,7 @@ import re
 import sys
 import time
 import warnings
+from typing import Dict, Tuple
 
 import bs4
 import html5lib
@@ -322,7 +323,7 @@ class IchikawaModule:
       status = "error"
     return status
 
-  def get_sessionid_from_header(self, headers: dict) -> str:
+  def get_sessionid_from_header(self, headers: Dict) -> str:
     return headers['Set-Cookie'].split(";")[0][11:]  ## 頭の"JSESSIONID="を削除する
 
   def set_isbn_to_params(self, isbn: str) -> None:

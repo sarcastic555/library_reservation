@@ -11,7 +11,7 @@ RUN apt-get update && \
 
 # Useful
 RUN apt-get update && \
-    apt-get -y install less tzdata && \
+    apt-get -y install less tzdata git && \
     apt-get update
 
 # Use python3.8 when python3 is called

@@ -243,8 +243,7 @@ class IchikawaModule:
     info.can_rental_extension = self.get_extension_status_per_book(bookid)
     info.return_datetime_before_extension = self.get_return_date_datetime_per_book(bookid)
     if info.can_rental_extension:
-      info.return_datetime_after_extension = info.return_datetime_before_extension.timedelta(
-          days=14)
+      info.return_datetime_after_extension = info.return_datetime_before_extension + datetime.timedelta(days=14)
     else:
       info.return_datetime_after_extension = info.return_datetime_before_extension
     return info

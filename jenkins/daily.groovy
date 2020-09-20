@@ -4,6 +4,11 @@ pipeline{
     agent{
         label "master"
     }
+    parameters {
+        booleanParam(name: "SHORT_CLASSIFY", defaultValue: false,
+                     description: "If true, shorten book number for classifying"
+        )
+    }
     stages{
         stage("Git Checkout for Docker Build"){
             steps{
@@ -48,7 +53,7 @@ pipeline{
             }
             steps{
                 dir("./${dirname}"){
-                    echo "======== Executing Download Booklistr ========"
+                    echo "======== Executing Download Booklist ========"
                     sh "python ./download_booklist.py"
                 }
             }
@@ -61,9 +66,15 @@ pipeline{
                 }
             }
             steps{
-                dir("./${dirname}"){
-                    echo "======== Executing Classify Booklist ========"
-                    sh "python ./classfy_list.py --short"
+                script {
+                    command = "python ./classfy_list.py"
+                    if (params.SHORT_CLASSIFY){
+                        command += " --short"
+                    }
+                    dir("./${dirname}"){
+                        echo "======== Executing Classify Booklist ========"
+                        sh "${command}"
+                    }
                 }
             }
         }
@@ -77,7 +88,7 @@ pipeline{
             steps{
                 dir("./${dirname}"){
                     echo "======== Executing Extension Checker ========"
-                    sh "python ./extension_checker.py"
+                    sh "python extension_checker.py"
                 }
             }
         }

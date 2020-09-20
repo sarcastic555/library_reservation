@@ -18,8 +18,9 @@ class BooklogManager:
   download_URL = 'https://download.booklog.jp/shelf/csv?signature={}'
   logout_URL = 'https://booklog.jp/logout'
 
-  def __init__(self):
+  def __init__(self, sleep_time=3):
     logging.info("BooklogManager constructore called")
+    self.sleep_time = sleep_time  # [sec]
     self.booklog_id = os.environ['BOOKLOG_ID']
     self.booklog_pass = os.environ['BOOKLOG_PASSWORD']
 
@@ -33,7 +34,8 @@ class BooklogManager:
 
     self.login_header = self.generate_login_header(self.session_id)
     self.login_data = self.generate_login_data(self.booklog_id, self.booklog_pass)
-    self.signature = None
+
+    self.login()
 
   def generate_login_header(self, session_id):
     header = {}
@@ -51,25 +53,31 @@ class BooklogManager:
 
   def login(self):
     logging.info("BooklogManager::login called")
+    time.sleep(self.sleep_time)
     self.session.get(self.__class__.login_URL)
+    time.sleep(self.sleep_time)
     self.session.post(self.__class__.login_URL,
                       headers=self.login_header,
                       data=self.login_data,
                       allow_redirects=True)
 
-  def set_signature(self):
-    logging.info("BooklogManager::set_signature called")
+  def get_signature(self):
+    logging.info("BooklogManager::get_signature called")
+    time.sleep(self.sleep_time)
     r = self.session.get(self.__class__.export_URL)
     soup = bs4.BeautifulSoup(r.text, 'html.parser')
     button = soup.find(class_='buttons')
-    ## signature取得(ボタンにリンクとして埋め込まれている)
-    self.signature = re.search('.*signature=(.*)', button.find('a')['href'])[1]
-    logging.debug(f"signature={self.signature}")
+    ## signatureを返す(ボタンにリンクとして埋め込まれている)
+    signature = re.search('.*signature=(.*)', button.find('a')['href'])[1]
+    logging.info(f"signature={signature}")
+    return signature
 
   def download_csv_file(self, outfile_name):
     logging.info("BooklogManager::download_csv_file called")
+    signature = self.get_signature()
     ## csvダウンロード
-    r = self.session.get(self.__class__.download_URL.format(self.signature))
+    time.sleep(self.sleep_time)
+    r = self.session.get(self.__class__.download_URL.format(signature))
     r.encoding = 'Shift_JIS'  ## これがないと文字化けする
     logging.debug(r.text[:300])  ### 全て出力するとあふれるので最初の100文字だけ出力
     if os.path.exists(outfile_name):
@@ -80,20 +88,21 @@ class BooklogManager:
   def logout(self):
     logging.info("BooklogManager::logout called")
     ## ログアウト
+    time.sleep(self.sleep_time)
     r = self.session.get(self.__class__.logout_URL,
                          headers={'cookie': 'PHPSESSID=' + self.session_id})
     r.close()
+
+  def __del__(self):
+    self.logout()
 
 
 def main():
   logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
 
   logging.info('download_booklist.py start')
-  booklog_manager = BooklogManager()
-  booklog_manager.login()
-  booklog_manager.set_signature()
+  booklog_manager = BooklogManager(sleep_time=3)
   booklog_manager.download_csv_file("list/alllist.csv")
-  booklog_manager.logout()
   logging.info('download_booklist.py end')
 
 

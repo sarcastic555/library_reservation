@@ -44,10 +44,10 @@ def extend_reservation_day_if_satisfied_condition(sleep=3) -> None:
       logging.info(f"bookdID={bookid} return day will be extended.")
       apply_succeed = tool.apply_reserve_extension(bookid)
       if (apply_succeed):
-        logging.info('Lending day extenstion succeeded!')
+        logging.info('Return day extenstion succeeded!')
         num_of_reservation_extension += 1
       else:
-        warnings.warn('Lending day extension failed.')
+        warnings.warn('Return day extension failed.')
         bookid += 1  ## 処理を続行
     else:
       bookid += 1

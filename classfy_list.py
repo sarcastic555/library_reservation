@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import logging
 import os
@@ -67,12 +68,14 @@ class BookClassifier:
     else:
       return 'not_found'
 
-  def create_all_book_status(self, notread_df, nowreading_df):
-    logging.info("BookClassifier::create_all_book_status called")
+  def create_all_book_status(self, notread_df, nowreading_df, short=False):
+    logging.info(f"BookClassifier::create_all_book_status (short={short}) called")
     book_status_list = []
-    for i in range(len(notread_df)):
+    # decrease target book num in short execution version
+    target_booknum = 8 if short else len(notread_df)
+    for i in range(target_booknum):
       if (i + 1) % 10 == 0:
-        logging.info("Classfying book %d/%d" % (i + 1, len(notread_df)))
+        logging.info("Classfying book %d/%d" % (i + 1, target_booknum))
       time.sleep(self.sleeptime)
       book_info = notread_df.iloc[i]
       status = self.evaluate_book_status(book_info, nowreading_df)
@@ -90,17 +93,20 @@ class BookClassifier:
     # 「読みたいラベルの本」は一致しない可能性がある
 
 
-def main():
+def main(short=False):
   logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
   logging.info("classfy_list_ichikawa.py start")
   bc = BookClassifier(sleep=1)
   df_not_read = bc.get_want_read_book_list("list/alllist.csv")
   df_reading = bc.get_now_reading_book_list("list/nowreading.csv")
-  status_series = bc.create_all_book_status(df_not_read, df_reading)
+  status_series = bc.create_all_book_status(df_not_read, df_reading, short=short)
   df_not_read['waitstatus'] = status_series
   bc.output_book_based_on_status(df_not_read, output_dir="list")
   logging.info("classfy_list_ichikawa.py end")
 
 
 if __name__ == "__main__":
-  main()
+  parser = argparse.ArgumentParser()
+  parser.add_argument("--short", action='store_true', help="short execution version if true")
+  args = parser.parse_args()
+  main(short=args.short)

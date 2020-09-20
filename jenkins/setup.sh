@@ -18,27 +18,19 @@ sudo service docker start
 sudo docker pull progrium/plugins
 sudo yum update -y
 
-# jenkins account setup
-sudo su
-useradd jenkins # error may occur
-sudo usermod -aG docker jenkins # use docker without sudo
-sudo usermod -G wheel jenkins # use sudo command without sudo
-sudo passwd jenkins # set password for "jenkins" account
-## visudo to edit /etc/sudoers
-## Comment out "%wheel ALL=(ALL) NOPASSWD: ALL"
-## Add "Jenkins ALL=(ALL) NOPASSWD:ALL"
-# change /etc/passwd so as to login jenkins account by "sudo su -l jenkins"
-#(old) jenkins:x:996:991:Jenkins Automation Server:/var/lib/jenkins:/bin/false
-#(new) jenkins:x:996:991:Jenkins Automation User:/home/jenkins:/bin/bash
-sudo su -l jenkins
+# clone repository
 git clone https://github.com/sarcastic555/library_reservation.git
-chown -R jenkins .
-chgrp -R jenkins .
-
-
-sudo service jenkins start
 
 ## Jenkins setup
+# Edit /etc/sysconfig/jenkins
+# JENKINS_USER="root"
+# JENKINS_JAVA_OPTIONS="-Djava.awt.headless=true -Dorg.apache.commons.jelly.tags.fmt.timeZone=Asia/Tokyo"
+
+## Start jenkins
+sudo service jenkins start
+
+## jenkins setup at browser
 # use pipeline style to create new job
 # Install "Docker pipeline" and from Dashboad -> Plugin manager
 # Register environmental variable from Jenkins Manager -> System Configuration
+

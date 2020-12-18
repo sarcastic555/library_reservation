@@ -14,6 +14,11 @@ sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenk
 sudo rpm --import https://pkg.jenkins.io/redhat/jenkins.io.key
 sudo yum -y install jenkins
 
+# timezone setting
+# Comment out ZONE="UTC" and add ZONE="Asia/Tokyo" at /etc/sysconfig/clock
+# execute sudo ln -sf /usr/share/zoneinfo/Japan /etc/localtime
+# reference: https://qiita.com/nikuruyo/items/19504660c50efe3c24c2
+
 sudo service docker start
 sudo docker pull progrium/plugins
 sudo yum update -y

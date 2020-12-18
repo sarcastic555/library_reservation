@@ -49,8 +49,11 @@ class BookClassifier:
     logging.info("Number of reading book = %d" % len(df))
     return df
 
-  def book_is_rental_or_reserving(self, book_info, nowreading_df):
-    return len(nowreading_df[nowreading_df['ISBN'] == int(book_info['13桁ISBN'])]) != 0
+  def book_is_rental_or_reserving(self, book_info, nowreading_df=None) -> bool:
+    if nowreading_df is None: # in case of no nowreading books
+      return False
+    else:
+      return len(nowreading_df[nowreading_df['ISBN'] == int(book_info['13桁ISBN'])]) != 0
 
   def evaluate_book_status(self, book_info, nowreading_df):
     if (np.isnan(book_info['13桁ISBN'])):
@@ -72,7 +75,7 @@ class BookClassifier:
     logging.info(f"BookClassifier::create_all_book_status (short={short}) called")
     book_status_list = []
     # decrease target book num in short execution version
-    target_booknum = 8 if short else len(notread_df)
+    target_booknum = min(8, len(notread_df)) if short else len(notread_df)
     for i in range(target_booknum):
       if (i + 1) % 10 == 0:
         logging.info("Classfying book %d/%d" % (i + 1, target_booknum))

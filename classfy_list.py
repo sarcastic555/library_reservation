@@ -50,7 +50,7 @@ class BookClassifier:
     return df
 
   def book_is_rental_or_reserving(self, book_info, nowreading_df=None) -> bool:
-    if nowreading_df is None: # in case of no nowreading books
+    if nowreading_df is None:  # in case of no nowreading books
       return False
     else:
       return len(nowreading_df[nowreading_df['ISBN'] == int(book_info['13桁ISBN'])]) != 0

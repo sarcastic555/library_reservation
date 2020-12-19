@@ -23,13 +23,13 @@ python extension_checker.py
 python ./create_owning_or_reserving_booklist.py
 ```
 
-4. 1.でダウンロードしたブックリストを既読・未読即時利用可能・未読即時利用不可に分類
+4. 1.でダウンロードしたブックリストを既読・未読即時利用可能・未読即時利用不可に分類  
 3.の出力結果を利用
 ```bash
 python ./classfy_list.py
 ```
 
-5. 返却期限が迫っていればLINEで通知
+5. 返却期限が迫っていればLINEで通知  
 3.の出力結果を利用
 ```bash
 python ./send_line_message.py
@@ -40,8 +40,8 @@ python ./send_line_message.py
 python ./clear_reserve_basket.py
 ```
 
-7. 読みたい本リストの中から資料を予約
-4.の結果を利用
+7. 読みたい本リストの中から資料を予約  
+1.と4.の結果を利用
 ```
 python ./reserve_book.py
 ```

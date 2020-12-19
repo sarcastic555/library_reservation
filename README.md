@@ -41,6 +41,7 @@ python ./clear_reserve_basket.py
 ```
 
 7. 読みたい本リストの中から資料を予約
+4.の結果を利用
 ```
 python ./reserve_book.py
 ```

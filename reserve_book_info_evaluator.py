@@ -17,16 +17,19 @@ class NowReadingListInfo:
       self.prepared_book_num = 0
       self.shortwait_book_num = 0
       self.longwait_book_num = 0
+      self.outdated_book_num = 0
       self.minimum_remain_day = 5
       return
     self.df = pd.read_csv(filename)
     self.nowreading_num = len(self.df)
     self.prepared_book_num = len(self.df[self.df['waitnum'] == 0])
     self.shortwait_book_num = len(self.df[self.df['waitnum'] == 1])
-    self.longwait_book_num = len(self.df[self.df['waitnum'] > 1])
+    self.longwait_book_num = len(self.df[(self.df['waitnum'] > 1) & (self.df['waitnum'] != 99)])
+    self.outdated_book_num = len(self.df[self.df['waitnum'] == 99])
     logging.info(f"Number of prepared book = {self.prepared_book_num}")
     logging.info(f"Number of shortwait book in reserve list = {self.shortwait_book_num}")
     logging.info(f"Number of longwait book in reserve list = {self.longwait_book_num}")
+    logging.info(f"Number of outdated book in reserve list = {self.outdated_book_num}")
     self.minimum_remain_day = self.df[self.df["status"] == "lend"]['remainday'].min()
 
 
@@ -88,6 +91,8 @@ class ReserveBookNumCalculator:
     logging.info(
         f"shortwait_reserve_book_num before consider_remaining_date_for_reserve_book_num = {self.shortwait_reserve_book_num}"
     )
+    logging.info(f"minimum_remain_day = {self.minimum_remain_day}")
+    # もし借用中の書籍がなければminimum_remain_dayはnanとなるので下記条件は成立しない（予約冊数は0にならない）
     if (self.minimum_remain_day < 2) or (self.minimum_remain_day > 8):
       logging.info(f"Minimum remain day (={self.minimum_remain_day}) is out of range")
       logging.info("Set shortwait reserve book num to 0")

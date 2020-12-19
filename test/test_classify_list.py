@@ -6,7 +6,7 @@ import pandas as pd
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/.."))
 
-from classfy_list import BookClassifier
+from classify_list import BookClassifier
 
 
 def test_get_want_read() -> None:

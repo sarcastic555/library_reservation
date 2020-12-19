@@ -58,26 +58,6 @@ pipeline{
                 }
             }
         }
-        stage("Classify Booklist"){
-            agent {
-                docker {
-                  image 'library_reservation:latest'
-                  args '-e TZ=Asia/Tokyo'
-                }
-            }
-            steps{
-                script {
-                    command = "python ./classfy_list.py"
-                    if (params.SHORT_CLASSIFY){
-                        command += " --short"
-                    }
-                    dir("./${dirname}"){
-                        echo "======== Executing Classify Booklist ========"
-                        sh "${command}"
-                    }
-                }
-            }
-        }
         stage("Extension Checker"){
             agent {
                 docker {
@@ -103,6 +83,26 @@ pipeline{
                 dir("./${dirname}"){
                     echo "======== Executing Create Owning or Reserving Booklist ========"
                     sh "python ./create_owning_or_reserving_booklist.py"
+                }
+            }
+        }
+        stage("Classify Booklist"){
+            agent {
+                docker {
+                  image 'library_reservation:latest'
+                  args '-e TZ=Asia/Tokyo'
+                }
+            }
+            steps{
+                script {
+                    command = "python ./classify_list.py"
+                    if (params.SHORT_CLASSIFY){
+                        command += " --short"
+                    }
+                    dir("./${dirname}"){
+                        echo "======== Executing Classify Booklist ========"
+                        sh "${command}"
+                    }
                 }
             }
         }

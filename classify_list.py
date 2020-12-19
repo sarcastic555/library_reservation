@@ -78,7 +78,7 @@ class BookClassifier:
     target_booknum = min(8, len(notread_df)) if short else len(notread_df)
     for i in range(target_booknum):
       if (i + 1) % 10 == 0:
-        logging.info("Classfying book %d/%d" % (i + 1, target_booknum))
+        logging.info("Classifying book %d/%d" % (i + 1, target_booknum))
       time.sleep(self.sleeptime)
       book_info = notread_df.iloc[i]
       status = self.evaluate_book_status(book_info, nowreading_df)
@@ -98,7 +98,7 @@ class BookClassifier:
 
 def main(short=False):
   logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
-  logging.info("classfy_list_ichikawa.py start")
+  logging.info("classify_list_ichikawa.py start")
   bc = BookClassifier(sleep=1)
   df_not_read = bc.get_want_read_book_list("list/alllist.csv")
   df_reading = bc.get_now_reading_book_list("list/nowreading.csv")

@@ -26,7 +26,7 @@ python ./create_owning_or_reserving_booklist.py
 4. 1.でダウンロードしたブックリストを既読・未読即時利用可能・未読即時利用不可に分類  
 3.の出力結果を利用
 ```bash
-python ./classfy_list.py
+python ./classify_list.py
 ```
 
 5. 返却期限が迫っていればLINEで通知  

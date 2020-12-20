@@ -6,7 +6,7 @@ import warnings
 
 import pandas as pd
 
-from tool_ichikawa import *
+from tools.tool_ichikawa import *
 
 
 ## 対象書籍が貸し出し延長対象であるかを判定する

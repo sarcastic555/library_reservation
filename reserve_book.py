@@ -6,7 +6,7 @@ import warnings
 import pandas as pd
 
 from reserve_book_info_evaluator import ReserveBookInfoEvaluator
-from tool_ichikawa import IchikawaModule
+from tools.tool_ichikawa import IchikawaModule
 
 
 def main(sleep=3):

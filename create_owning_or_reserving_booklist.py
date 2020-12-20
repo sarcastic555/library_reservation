@@ -6,7 +6,7 @@ import warnings
 
 import pandas as pd
 
-from tool_ichikawa import *
+from tools.tool_ichikawa import *
 
 
 def get_waitnum_from_status(book_status):

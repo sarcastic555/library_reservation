@@ -1,6 +1,6 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
-from tool_ichikawa import *
+from tools.tool_ichikawa import *
 
 
 ### 予約カゴを空にする

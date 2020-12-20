@@ -54,7 +54,7 @@ pipeline{
             steps{
                 dir("./${dirname}"){
                     echo "======== Executing Download Booklist ========"
-                    sh "python ./download_booklist.py"
+                    sh "python ./download_booklist.py --output_file ./list/booklog_data.csv"
                 }
             }
         }

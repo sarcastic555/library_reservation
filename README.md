@@ -10,7 +10,7 @@ source docker_run.sh
 
 1. ブックリストのダウンロード
 ```bash
-python ./download_booklist.py
+python ./download_booklist.py --output_file ./list/booklog_data.csv
 ```
 
 2. 貸し出し延長が必要か判定し必要なら延長手続きを実施

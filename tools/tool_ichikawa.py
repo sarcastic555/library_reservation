@@ -62,11 +62,10 @@ class IchikawaModule:
     self.extend_confirm_params['hid_session'] = sessionID_string
 
   ## 貸し出し中の本の情報を取得する
-  def get_rental_book_information(self, bookid: int) -> BookInfo:
+  def get_rental_book_information(self, bookid: int) -> RentalBookInfo:
     logging.info(f"IchikawaModule::get_rental_book_information (bookid = {bookid}) called")
-    info = BookInfo()
+    info = RentalBookInfo()
     info.book_id = bookid
-    info.status = "lend"
     info.title, info.isbn = self.get_title_and_isbn_from_book_info(bookid, "lend")
     info.can_rental_extension = self.get_extension_status_per_book(bookid)
     info.return_datetime_before_extension = self.get_return_date_datetime_per_book(bookid)
@@ -78,22 +77,13 @@ class IchikawaModule:
     return info
 
   ## 予約中の本の情報を取得する
-  def get_under_reservation_book_information(self, bookid: int) -> BookInfo:
+  def get_under_reservation_book_information(self, bookid: int) -> ReserveBookInfo:
     logging.info(
         f"IchikawaModule::get_under_reservation_book_information (bookid = {bookid}) called")
-    info = BookInfo()
-    info.status = "reserve"
+    info = ReserveBookInfo()
     info.title, info.isbn = self.get_title_and_isbn_from_book_info(bookid, "reserve")
     info.reserve_status = self.get_book_reserve_status_per_book(bookid)
     return info
-
-  def get_book_information(self, bookid, listtype="lend") -> BookInfo:
-    if (listtype == "lend"):
-      return self.get_rental_book_information(bookid)
-    elif (listtype == "reserve"):
-      return self.get_under_reservation_book_information(bookid)
-    else:
-      return None
 
   ## マイページのHTMLを読み込んで、bookIDに対応する本が貸出延長可能かどうか判定する関数
   ## 各資料の詳細ページからは判定できないので、貸し出し一覧ページから情報を取得する

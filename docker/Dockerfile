@@ -29,7 +29,9 @@ RUN pip3 install --upgrade pip && \
     pip3 install mailsend==1.1.1 && \
     pip3 install yapf==0.30.0 && \
     pip3 install isort==5.5.2 && \
-    pip3 install pytest==6.2.1
+    pip3 install pytest==6.2.1 && \
+    pip3 install freezegun==1.0.0 && \
+    pip3 install mock==4.0.3
 
 # Environmental variable definition
 ENV LANG ja_JP.UTF-8

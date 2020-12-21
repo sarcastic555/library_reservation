@@ -20,13 +20,13 @@ python extension_checker.py
 
 3. 借りている本、予約している本のリストを作成
 ```bash
-python ./create_owning_or_reserving_booklist.py
+python ./create_owning_or_reserving_booklist.py --lend_output_file list/lend.csv --reserve_output_file list/reserve.csv
 ```
 
 4. 1.でダウンロードしたブックリストを既読・未読即時利用可能・未読即時利用不可に分類  
 3.の出力結果を利用
 ```bash
-python ./classify_list.py
+python3 classify_list.py --booklog_data_file list/booklog_data.csv --lend_file list/lend.csv --reserve_file list/reserve.csv --output_not_found_file list/not_found.csv --output_no_reservation_file list/no_reservation.csv --output_has_reservation_file list/has_reservation.csv
 ```
 
 5. 返却期限が迫っていればLINEで通知  

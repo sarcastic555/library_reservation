@@ -35,12 +35,17 @@ python3 classify_list.py --booklog_data_file list/booklog_data.csv --lend_file l
 python ./send_line_message.py
 ```
 
-6. 予約バスケットをクリア
+6. 予約冊数の計算
+```bash
+python3 reserve_book_calculator.py --now_lend_file list/lend.csv --now_reserve_file list/reserve.csv --no_reservation_file list/no_reservation.csv --has_reservation_file list/has_reservation.csv --output_shortwait_reserve_size_file result/shortwait_reserve_size.csv --output_longwait_reserve_size_file result/longwait_reserve_size.csv --output_report_file result/report.html
+```
+
+7. 予約バスケットをクリア
 ```bash
 python ./clear_reserve_basket.py
 ```
 
-7. 読みたい本リストの中から資料を予約  
+8. 読みたい本リストの中から資料を予約  
 1.と4.の結果を利用
 ```
 python ./reserve_book.py

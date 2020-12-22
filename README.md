@@ -40,12 +40,17 @@ python ./send_line_message.py
 python3 reserve_book_calculator.py --now_lend_file list/lend.csv --now_reserve_file list/reserve.csv --no_reservation_file list/no_reservation.csv --has_reservation_file list/has_reservation.csv --output_shortwait_reserve_size_file result/shortwait_reserve_size.csv --output_longwait_reserve_size_file result/longwait_reserve_size.csv --output_report_file result/report.html
 ```
 
-7. 予約バスケットをクリア
+7. 予約する本を選択
+```bash
+python reserve_book_selector.py --no_reservation_booklist_file list/no_reservation.csv --has_reservation_booklist_file list/has_reservation.csv --shortwait_reserve_ok_num_file result/shortwait_reserve_size.csv --longwait_reserve_book_num_file result/longwait_reserve_size.csv --lend_file list/lend.csv --output_shortwait_reserve_list list/shortwait_reserve_list.csv --output_longwait_reserve_list list/longwait_reserve_list.csv
+```
+
+8. 予約バスケットをクリア
 ```bash
 python ./clear_reserve_basket.py
 ```
 
-8. 読みたい本リストの中から資料を予約  
+9. 読みたい本リストの中から資料を予約  
 1.と4.の結果を利用
 ```
 python ./reserve_book.py

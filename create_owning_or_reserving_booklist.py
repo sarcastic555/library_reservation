@@ -11,8 +11,8 @@ from tools.tool_ichikawa import *
 
 def options() -> argparse:
   parser = argparse.ArgumentParser()
-  parser.add_argument('--lend_output_file', help='Path to output lend book list.', default='list/lendlist.csv')
-  parser.add_argument('--reserve_output_file', help='Path to output reserving book list.', default='list/reservelist.csv')
+  parser.add_argument('--lend_output_file', help='Path to output lend book list.', default='list/lend.csv')
+  parser.add_argument('--reserve_output_file', help='Path to output reserving book list.', default='list/reserve.csv')
   args = parser.parse_args()
   logging.debug(f'options={args}')
   return args

@@ -31,7 +31,10 @@ RUN pip3 install --upgrade pip && \
     pip3 install isort==5.5.2 && \
     pip3 install pytest==6.2.1 && \
     pip3 install freezegun==1.0.0 && \
-    pip3 install mock==4.0.3
+    pip3 install mock==4.0.3 && \
+    pip3 install pdfkit==0.6.1 && \
+    pip3 install Jinja2==2.11.2
+
 
 # Environmental variable definition
 ENV LANG ja_JP.UTF-8

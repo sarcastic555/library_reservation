@@ -11,14 +11,14 @@ from classify_list import BookClassifier
 
 def test_get_want_read() -> None:
   bc = BookClassifier(sleep=1)
-  df = bc.get_want_read_book_list("data/sample.csv")
+  df = bc.get_want_read_book_list(os.path.join(os.path.dirname(__file__), "data/sample.csv"))
   assert (len(df) == 2)
 
 
-def test_get_now_reading_read() -> None:
+def test_read_booklist() -> None:
   bc = BookClassifier(sleep=1)
-  df = bc.get_now_reading_book_list("data/nowreading.csv")
-  assert (len(df) == 3 + 2)  ## nowreading + reserving
+  df = bc.read_booklist(os.path.join(os.path.dirname(__file__), "data/sample.csv"))
+  assert (len(df) == 2)
 
 
 def test_book_status_nan() -> None:

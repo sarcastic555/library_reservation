@@ -39,8 +39,8 @@ class BookClassifier:
     logging.info("Number of want read book = %d" % len(df))
     return df
 
-  def get_now_reading_book_list(self, booklist_file):
-    logging.info("BookClassifier::get_now_reading_book_list called")
+  def read_booklist(self, booklist_file):
+    logging.info("BookClassifier::read_booklist called")
     logging.info(f"reading {booklist_file} as now reading list file")
     if not os.path.exists(booklist_file):
       warnings.warn(f"{booklist_file} not found. Skip reading the file")

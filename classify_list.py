@@ -32,8 +32,8 @@ def main(options=options):
   bc = BookClassifier(sleep=1)
   # read booklog data, and rental and reserving book list
   df_not_read = bc.get_want_read_book_list(options.booklog_data_file)
-  df_reading = bc.get_now_reading_book_list(options.lend_file)
-  df_reserving = bc.get_now_reading_book_list(options.reserve_file)
+  df_reading = bc.read_booklist(options.lend_file)
+  df_reserving = bc.read_booklist(options.reserve_file)
   df_reading_or_reserving = pd.concat([df_reading, df_reserving])
   # get book status
   status_series = bc.create_all_book_status(df_not_read, df_reading_or_reserving, short=options.short)

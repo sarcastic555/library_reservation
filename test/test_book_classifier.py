@@ -20,17 +20,17 @@ def test_get_want_read_book_list() -> None:
   assert(len(df) == 1)
 
 # 貸し出し中資料のデータを正しく読めるか
-def test_get_now_reading_book_list1() -> None:
+def test_read_booklist1() -> None:
   bc = BookClassifier(sleep=0)
-  df = bc.get_now_reading_book_list(os.path.join(test_data_path, 'lend.csv'))
+  df = bc.read_booklist(os.path.join(test_data_path, 'lend.csv'))
   assert(len(df) == 1)
   assert(df['title'].iloc[0] == 'dummy_title')
 
 # 存在しないパスが指定された場合は警告を出した上で空のdataframeを返す
-def test_get_now_reading_book_list2() -> None:
+def test_read_booklist2() -> None:
   bc = BookClassifier(sleep=0)
   with pytest.warns(UserWarning):
-    df = bc.get_now_reading_book_list('not_exist_path')
+    df = bc.read_booklist('not_exist_path')
   assert(len(df) == 0)
 
 # 書籍が貸し出し中であることの判定

@@ -52,7 +52,8 @@ def main(options) -> None:
     reservelist = get_reserve_isbn_list(booklist_df, lend_df, reserve_num)
     os.makedirs(os.path.dirname(options.output_shortwait_reserve_list), exist_ok=True)
     with open(options.output_shortwait_reserve_list, 'w') as f:
-      f.write(str(reservelist))
+      for reserve_isbn in reservelist:
+        f.write(str(reserve_isbn) + '\n')
 
     # reserve longwait books
     booklist_df = pd.read_csv(options.has_reservation_booklist_file)
@@ -60,7 +61,8 @@ def main(options) -> None:
     reservelist = get_reserve_isbn_list(booklist_df, lend_df, reserve_num)
     os.makedirs(os.path.dirname(options.output_longwait_reserve_list), exist_ok=True)
     with open(options.output_longwait_reserve_list, 'w') as f:
-      f.write(str(reservelist))
+      for reserve_isbn in reservelist:
+        f.write(str(reserve_isbn) + '\n')
 
 
 if __name__ == '__main__':

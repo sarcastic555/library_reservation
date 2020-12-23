@@ -51,9 +51,8 @@ python ./clear_reserve_basket.py
 ```
 
 9. 読みたい本リストの中から資料を予約  
-1.と4.の結果を利用
 ```
-python ./reserve_book.py
+python3 reserve_book.py --shortwait_reserve_list list/shortwait_reserve_list.csv --longwait_reserve_list list/longwait_reserve_list.csv
 ```
 
 # ツール

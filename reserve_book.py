@@ -1,30 +1,37 @@
 import logging
-import os
-import random
 import warnings
+import argparse
 
-import pandas as pd
-
-from reserve_book_info_evaluator import ReserveBookInfoEvaluator
 from tools.tool_ichikawa import IchikawaModule
 
+def options() -> argparse:
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--shortwait_reserve_list', help='Input path to booklog data file.', default='list/shortwait_reserve_list.csv')
+  parser.add_argument('--longwait_reserve_list', help='Input path to lend book list.', default='list/longwait_reserve_list.csv')
+  args = parser.parse_args()
+  logging.debug(f'options={args}')
+  return args
 
-def main(sleep=3):
-  reserve_calculator = ReserveBookInfoEvaluator(nowreading_filename="list/nowreading.csv",
-                                                shortwait_filename="list/no_reservation.csv",
-                                                longwait_filename="list/has_reservation.csv")
-  # 予約予定冊数の計算
-  reserve_calculator.calculate_reserve_book_num()
-  # 計算結果の出力
-  reserve_calculator.print_info()
+def main(options=options):
+
   # 予約予定の本のISBNリストの取得
-  shortwait_isbn_list = reserve_calculator.get_reserve_isbn_list_shortwait(
-      reserve_calculator.calc.shortwait_reserve_book_num)
-  longwait_isbn_list = reserve_calculator.get_reserve_isbn_list_longwait(
-      reserve_calculator.calc.longwait_reserve_book_num)
+  shortwait_isbn_list = []
+  with open(options.shortwait_reserve_list, 'r') as f:
+    line = f.readline()
+    while line:
+      isbn = str(int(line)) # デフォルトだと改行が含まれるので一度intに変換した後に文字列に戻す
+      shortwait_isbn_list.append(isbn)
+      line = f.readline()
+  longwait_isbn_list = []
+  with open(options.longwait_reserve_list, 'r') as f:
+    line = f.readline()
+    while line:
+      isbn = str(int(line)) # デフォルトだと改行が含まれるので一度intに変換した後に文字列に戻す
+      longwait_isbn_list.append(isbn)
+      line = f.readline()
 
   # 予約APIの準備
-  tool = IchikawaModule(sleep=sleep)
+  tool = IchikawaModule(sleep=3)
   # 待ち時間小の初期の予約処理を実施
   logging.info("%d books will be reserved as shortwait" % len(shortwait_isbn_list))
   for isbn in shortwait_isbn_list:
@@ -45,4 +52,5 @@ def main(sleep=3):
 
 
 if __name__ == "__main__":
-  main()
+  options = options()
+  main(options=options)

@@ -14,6 +14,8 @@ pipeline{
             steps{
                 dir("/home/ec2-user/library_reservation") {
                     echo "======== Executing Git Checkout for Docker Build ========"
+                    sh 'git reset .'
+                    sh 'git clean -dxf .'
                     sh 'git checkout .'
                     sh 'git pull'
                 }

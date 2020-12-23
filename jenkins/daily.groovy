@@ -148,5 +148,19 @@ pipeline{
                 }
             }
         }
+        stage("Pytest"){
+            agent {
+                docker {
+                  image 'library_reservation:latest'
+                  args '-e TZ=Asia/Tokyo'
+                }
+            }
+            steps{
+                dir("./${dirname}"){
+                    echo "======== Executing Pytest ========"
+                    sh "pytest -rsf"
+                }
+            }
+        }
     }
 }

@@ -297,7 +297,12 @@ class IchikawaModule:
   def reserve_book(self, isbn: str) -> bool:
     logging.info(f"IchikawaModule: reserve_book (isbn = {isbn}) called")
     if (type(isbn) != str):
-      raise TypeError("str is expected as type of isbn, but it is %s" % type(isbn))
+      warnings.warn("str is expected as type of isbn, but it is %s" % type(isbn))
+      return False
+    # 検索システムが完全一致ではなく部分一致で出力してしまうため13桁未満が入力されても結果が出力されることを防ぐ
+    if (len(isbn) != 13):
+      warnings.warn(f"ISBN (={isbn}) is not 13 digit")
+      return False
     ## 詳細検索ページに移動
     time.sleep(self.sleeptime)
     r = self.session.get(IchikawaURL.search, headers=self.header)
@@ -312,7 +317,7 @@ class IchikawaModule:
     searchlistnum_text = soup.find(id='main').find(class_='nav-hdg').text
     ### 検索した本がない場合はエラーを返して終了
     if searchlistnum_text.strip() == '該当するリストが存在しません。':
-      warnings.wanr(f"Target book (isbn = {isbn}) not found in the library database.")
+      warnings.warn(f"Target book (isbn = {isbn}) not found in the library database.")
       return False
     ##  1 ～ 1 件（全1 件）-> 1
     searchlistnum = int(re.search('（全([0-9]+) 件）', searchlistnum_text.strip())[1])

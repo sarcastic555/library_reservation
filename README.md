@@ -26,7 +26,7 @@ python ./create_owning_or_reserving_booklist.py --lend_output_file list/lend.csv
 4. 1.でダウンロードしたブックリストを既読・未読即時利用可能・未読即時利用不可に分類  
 3.の出力結果を利用
 ```bash
-python3 classify_list.py --booklog_data_file list/booklog_data.csv --lend_file list/lend.csv --reserve_file list/reserve.csv --output_not_found_file list/not_found.csv --output_no_reservation_file list/no_reservation.csv --output_has_reservation_file list/has_reservation.csv
+python classify_list.py --booklog_data_file list/booklog_data.csv --lend_file list/lend.csv --reserve_file list/reserve.csv --output_not_found_file list/not_found.csv --output_no_reservation_file list/no_reservation.csv --output_has_reservation_file list/has_reservation.csv
 ```
 
 5. 返却期限が迫っていればLINEで通知  
@@ -37,12 +37,12 @@ python ./send_line_message.py
 
 6. 予約冊数の計算
 ```bash
-python3 reserve_book_calculator.py --now_lend_file list/lend.csv --now_reserve_file list/reserve.csv --no_reservation_file list/no_reservation.csv --has_reservation_file list/has_reservation.csv --output_shortwait_reserve_size_file result/shortwait_reserve_size.csv --output_longwait_reserve_size_file result/longwait_reserve_size.csv --output_report_file result/report.html
+python reserve_book_calculator.py --now_lend_file list/lend.csv --now_reserve_file list/reserve.csv --no_reservation_file list/no_reservation.csv --has_reservation_file list/has_reservation.csv --output_shortwait_reserve_size_file result/shortwait_reserve_size.csv --output_longwait_reserve_size_file result/longwait_reserve_size.csv --output_report_file result/report.html
 ```
 
 7. 予約する本を選択
 ```bash
-python reserve_book_selector.py --no_reservation_booklist_file list/no_reservation.csv --has_reservation_booklist_file list/has_reservation.csv --shortwait_reserve_ok_num_file result/shortwait_reserve_size.csv --longwait_reserve_book_num_file result/longwait_reserve_size.csv --lend_file list/lend.csv --output_shortwait_reserve_list list/shortwait_reserve_list.csv --output_longwait_reserve_list list/longwait_reserve_list.csv
+python reserve_book_selector.py --no_reservation_booklist_file list/no_reservation.csv --has_reservation_booklist_file list/has_reservation.csv --shortwait_reserve_book_num_file result/shortwait_reserve_size.csv --longwait_reserve_book_num_file result/longwait_reserve_size.csv --lend_file list/lend.csv --output_shortwait_reserve_list list/shortwait_reserve_list.csv --output_longwait_reserve_list list/longwait_reserve_list.csv
 ```
 
 8. 予約バスケットをクリア
@@ -52,7 +52,7 @@ python ./clear_reserve_basket.py
 
 9. 読みたい本リストの中から資料を予約  
 ```
-python3 reserve_book.py --shortwait_reserve_list list/shortwait_reserve_list.csv --longwait_reserve_list list/longwait_reserve_list.csv
+python reserve_book.py --shortwait_reserve_list list/shortwait_reserve_list.csv --longwait_reserve_list list/longwait_reserve_list.csv
 ```
 
 # ツール

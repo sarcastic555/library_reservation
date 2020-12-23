@@ -84,7 +84,7 @@ pipeline{
             steps{
                 dir("./${dirname}"){
                     echo "======== Executing Create Owning or Reserving Booklist ========"
-                    sh "python ./create_owning_or_reserving_booklist.py"
+                    sh "python ./create_owning_or_reserving_booklist.py --lend_output_file list/lend.csv --reserve_output_file list/reserve.csv"
                 }
             }
         }
@@ -97,7 +97,7 @@ pipeline{
             }
             steps{
                 script {
-                    command = "python ./classify_list.py"
+                    command = "python classify_list.py --booklog_data_file list/booklog_data.csv --lend_file list/lend.csv --reserve_file list/reserve.csv --output_not_found_file list/not_found.csv --output_no_reservation_file list/no_reservation.csv --output_has_reservation_file list/has_reservation.csv"
                     if (params.SHORT_CLASSIFY){
                         command += " --short"
                     }
@@ -119,6 +119,34 @@ pipeline{
                 dir("./${dirname}"){
                     echo "======== Executing Send Line Message ========"
                     sh "python ./send_line_message.py"
+                }
+            }
+        }
+        stage("Reserve Book Calculation"){
+            agent {
+                docker {
+                  image 'library_reservation:latest'
+                  args '-e TZ=Asia/Tokyo'
+                }
+            }
+            steps{
+                dir("./${dirname}"){
+                    echo "======== Executing Reserve Book Calculation ========"
+                    sh "python reserve_book_calculator.py --now_lend_file list/lend.csv --now_reserve_file list/reserve.csv --no_reservation_file list/no_reservation.csv --has_reservation_file list/has_reservation.csv --output_shortwait_reserve_size_file result/shortwait_reserve_size.csv --output_longwait_reserve_size_file result/longwait_reserve_size.csv --output_report_file result/report.html"
+                }
+            }
+        }
+        stage("Reserve Book Selection"){
+            agent {
+                docker {
+                  image 'library_reservation:latest'
+                  args '-e TZ=Asia/Tokyo'
+                }
+            }
+            steps{
+                dir("./${dirname}"){
+                    echo "======== Executing Reserve Book Selection ========"
+                    sh "python reserve_book_selector.py --no_reservation_booklist_file list/no_reservation.csv --has_reservation_booklist_file list/has_reservation.csv --shortwait_reserve_book_num_file result/shortwait_reserve_size.csv --longwait_reserve_book_num_file result/longwait_reserve_size.csv --lend_file list/lend.csv --output_shortwait_reserve_list list/shortwait_reserve_list.csv --output_longwait_reserve_list list/longwait_reserve_list.csv"
                 }
             }
         }
@@ -146,7 +174,7 @@ pipeline{
             steps{
                 dir("./${dirname}"){
                     echo "======== Executing Reserve Book ========"
-                    sh "python ./reserve_book.py"
+                    sh "python reserve_book.py --shortwait_reserve_list list/shortwait_reserve_list.csv --longwait_reserve_list list/longwait_reserve_list.csv"
                 }
             }
         }

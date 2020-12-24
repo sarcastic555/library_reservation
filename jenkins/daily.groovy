@@ -192,5 +192,19 @@ pipeline{
                 }
             }
         }
+        stage("Formatter"){
+            agent {
+                docker {
+                  image 'library_reservation:latest'
+                  args '-e TZ=Asia/Tokyo'
+                }
+            }
+            steps{
+                dir("./${dirname}"){
+                    echo "======== Executing Formatter test ========"
+                    sh "yapf --diff --recursive ."
+                }
+            }
+        }
     }
 }

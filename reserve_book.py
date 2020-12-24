@@ -1,16 +1,22 @@
+import argparse
 import logging
 import warnings
-import argparse
 
 from tools.tool_ichikawa import IchikawaModule
 
+
 def options() -> argparse:
   parser = argparse.ArgumentParser()
-  parser.add_argument('--shortwait_reserve_list', help='Input path to booklog data file.', default='list/shortwait_reserve_list.csv')
-  parser.add_argument('--longwait_reserve_list', help='Input path to lend book list.', default='list/longwait_reserve_list.csv')
+  parser.add_argument('--shortwait_reserve_list',
+                      help='Input path to booklog data file.',
+                      default='list/shortwait_reserve_list.csv')
+  parser.add_argument('--longwait_reserve_list',
+                      help='Input path to lend book list.',
+                      default='list/longwait_reserve_list.csv')
   args = parser.parse_args()
   logging.debug(f'options={args}')
   return args
+
 
 def main(options=options):
 
@@ -19,14 +25,14 @@ def main(options=options):
   with open(options.shortwait_reserve_list, 'r') as f:
     line = f.readline()
     while line:
-      isbn = str(int(line)) # デフォルトだと改行が含まれるので一度intに変換した後に文字列に戻す
+      isbn = str(int(line))  # デフォルトだと改行が含まれるので一度intに変換した後に文字列に戻す
       shortwait_isbn_list.append(isbn)
       line = f.readline()
   longwait_isbn_list = []
   with open(options.longwait_reserve_list, 'r') as f:
     line = f.readline()
     while line:
-      isbn = str(int(line)) # デフォルトだと改行が含まれるので一度intに変換した後に文字列に戻す
+      isbn = str(int(line))  # デフォルトだと改行が含まれるので一度intに変換した後に文字列に戻す
       longwait_isbn_list.append(isbn)
       line = f.readline()
 

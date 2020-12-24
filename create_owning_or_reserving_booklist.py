@@ -9,13 +9,19 @@ import pandas as pd
 
 from tools.tool_ichikawa import *
 
+
 def options() -> argparse:
   parser = argparse.ArgumentParser()
-  parser.add_argument('--lend_output_file', help='Path to output lend book list.', default='list/lend.csv')
-  parser.add_argument('--reserve_output_file', help='Path to output reserving book list.', default='list/reserve.csv')
+  parser.add_argument('--lend_output_file',
+                      help='Path to output lend book list.',
+                      default='list/lend.csv')
+  parser.add_argument('--reserve_output_file',
+                      help='Path to output reserving book list.',
+                      default='list/reserve.csv')
   args = parser.parse_args()
   logging.debug(f'options={args}')
   return args
+
 
 def get_waitnum_from_status(book_status) -> int:
   # book_statusには冗長なスペース等が含まれているため文字列の完全一致ではなく対象文字列が含まれているかで判定
@@ -36,6 +42,7 @@ def get_waitnum_from_status(book_status) -> int:
     warnings.warn(f"Cannot evaluate waitnum for {book_status}")
     waitnum = 99
   return waitnum
+
 
 def get_rental_book_df(sleep=3) -> pd.DataFrame:
   columnname = ['title', 'ISBN', 'returndate', 'remainday', 'enableextension']
@@ -59,6 +66,7 @@ def get_rental_book_df(sleep=3) -> pd.DataFrame:
     }),
                    ignore_index=True)
   return df
+
 
 def get_reserving_book_df(sleep=3) -> pd.DataFrame:
   columnname = ['title', 'ISBN', 'returndate', 'remainday', 'enableextension']
@@ -101,6 +109,7 @@ def main(options: argparse):
   logging.info("reserve book size = %d" % len(df_reserve))
   os.makedirs(os.path.dirname(options.reserve_output_file), exist_ok=True)
   df_reserve.to_csv(options.reserve_output_file)
+
 
 if __name__ == "__main__":
   options = options()

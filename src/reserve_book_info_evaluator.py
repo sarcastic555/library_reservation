@@ -4,8 +4,8 @@ import random
 import warnings
 from typing import List
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 class NowLendingListInfo:
@@ -29,6 +29,7 @@ class NowLendingListInfo:
 
 
 class NowReservingListInfo:
+
   def __init__(self, filename):
     if not os.path.exists(filename):
       warnings.warn(f"{filename} not found. Skip reading nowreserving file.")
@@ -40,12 +41,14 @@ class NowReservingListInfo:
       self.__prepared_book_num = len(df[df['waitnum'] == 0])
       self.__shortwait_book_num = len(df[df['waitnum'] == 1])
       self.__longwait_book_num = len(df[(df['waitnum'] > 1) & (df['waitnum'] != 99)])
-  
+
   # 単体テストのためにgetterを作成する
   def prepared_book_num(self):
     return self.__prepared_book_num
+
   def shortwait_book_num(self):
     return self.__shortwait_book_num
+
   def longwait_book_num(self):
     return self.__longwait_book_num
 
@@ -55,5 +58,6 @@ class ReserveListInfo:
   def __init__(self, filename: str):
     df = pd.read_csv(filename)
     self.__candidate_list_size = len(df)
+
   def candidate_list_size(self):
     return self.__candidate_list_size

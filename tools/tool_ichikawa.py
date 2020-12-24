@@ -18,8 +18,8 @@ import pandas as pd
 import requests
 
 from BookInfo import *
-from tools.ichikawa_data.ichikawa_url import IchikawaURL
 from tools.ichikawa_data.header_param_info import HeaderParamInfo
+from tools.ichikawa_data.ichikawa_url import IchikawaURL
 
 logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
 

@@ -1,13 +1,15 @@
 import argparse
 import os
 import sys
-from mock import MagicMock, Mock
 from unittest import mock
+
+from mock import MagicMock, Mock
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../"))
 
 from reserve_book_calculator import *
 from src.reserve_book_info_evaluator import *
+
 
 # 予約枠が余っているときはshortwaitとlongwaitを1冊ずつ予約
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
@@ -32,6 +34,7 @@ def test_reserve_book_info1(longwait, shortwait, prepared, remainday) -> None:
   assert (shortwait_reserve == 1)
   assert (longwait_reserve == 1)
 
+
 # 受け取り待ちの資料が十分あるときはshortwaitは予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.prepared_book_num')
@@ -54,6 +57,7 @@ def test_reserve_book_info2(longwait, shortwait, prepared, remainday) -> None:
   longwait_reserve = df.iloc[-1]['longwait']
   assert (shortwait_reserve == 0)
   assert (longwait_reserve == 1)
+
 
 # shortwaitの予約中の資料が十分あるときはshortwaitは予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
@@ -78,6 +82,7 @@ def test_reserve_book_info3(longwait, shortwait, prepared, remainday) -> None:
   assert (shortwait_reserve == 0)
   assert (longwait_reserve == 1)
 
+
 # shortwait+preparedの予約中の資料が十分あるときはshortwaitは予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.prepared_book_num')
@@ -100,6 +105,7 @@ def test_reserve_book_info4(longwait, shortwait, prepared, remainday) -> None:
   longwait_reserve = df.iloc[-1]['longwait']
   assert (shortwait_reserve == 0)
   assert (longwait_reserve == 1)
+
 
 # shortwait+preparedの予約中の資料が多すぎる時はshortwaitだけでなくlongwaitも予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
@@ -124,6 +130,7 @@ def test_reserve_book_info5(longwait, shortwait, prepared, remainday) -> None:
   assert (shortwait_reserve == 0)
   assert (longwait_reserve == 0)
 
+
 # longwaitの予約中の資料が多すぎる時はlongwaitは予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.prepared_book_num')
@@ -146,6 +153,7 @@ def test_reserve_book_info6(longwait, shortwait, prepared, remainday) -> None:
   longwait_reserve = df.iloc[-1]['longwait']
   assert (shortwait_reserve == 1)
   assert (longwait_reserve == 0)
+
 
 # shortwaitもlongwaitも多すぎる時はどちらもは予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
@@ -170,6 +178,7 @@ def test_reserve_book_info7(longwait, shortwait, prepared, remainday) -> None:
   assert (shortwait_reserve == 0)
   assert (longwait_reserve == 0)
 
+
 # 返却期限が遠い時はshortwaitのみ予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.prepared_book_num')
@@ -192,6 +201,7 @@ def test_reserve_book_info8(longwait, shortwait, prepared, remainday) -> None:
   longwait_reserve = df.iloc[-1]['longwait']
   assert (shortwait_reserve == 0)
   assert (longwait_reserve == 1)
+
 
 # 返却期限が近すぎるはshortwaitのみ予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')

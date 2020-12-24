@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
 import argparse
 import codecs
-import os
 import logging
+import os
 
 from src.booklog_manager import BooklogManager
 
+
 def options():
   parser = argparse.ArgumentParser()
-  parser.add_argument('--output_file', help='Path to output booklog data.', default='list/booklog_data.csv')
+  parser.add_argument('--output_file',
+                      help='Path to output booklog data.',
+                      default='list/booklog_data.csv')
   args = parser.parse_args()
   logging.debug(f'options={args}')
   return args
+
 
 def main(options: argparse):
   logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')

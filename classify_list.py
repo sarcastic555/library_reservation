@@ -4,27 +4,37 @@ import logging
 import os
 import time
 import warnings
-import argparse
 
 import numpy as np
 import pandas as pd
 
 import tools.tool_culil
-
 from src.book_classifier import BookClassifier
+
 
 def options() -> argparse:
   parser = argparse.ArgumentParser()
-  parser.add_argument('--booklog_data_file', help='Input path to booklog data file.', default='list/booklog_data.csv')
+  parser.add_argument('--booklog_data_file',
+                      help='Input path to booklog data file.',
+                      default='list/booklog_data.csv')
   parser.add_argument('--lend_file', help='Input path to lend book list.', default='list/lend.csv')
-  parser.add_argument('--reserve_file', help='Input path to reserving book list.', default='list/reserve.csv')
-  parser.add_argument('--output_not_found_file', help='Output path to book list that is not found.', default='list/not_found.csv')
-  parser.add_argument('--output_no_reservation_file', help='Output path to book list without reservation.', default='list/no_reservation.csv')
-  parser.add_argument('--output_has_reservation_file', help='Output path to book list with reservation.', default='list/has_reservation.csv')
+  parser.add_argument('--reserve_file',
+                      help='Input path to reserving book list.',
+                      default='list/reserve.csv')
+  parser.add_argument('--output_not_found_file',
+                      help='Output path to book list that is not found.',
+                      default='list/not_found.csv')
+  parser.add_argument('--output_no_reservation_file',
+                      help='Output path to book list without reservation.',
+                      default='list/no_reservation.csv')
+  parser.add_argument('--output_has_reservation_file',
+                      help='Output path to book list with reservation.',
+                      default='list/has_reservation.csv')
   parser.add_argument("--short", action='store_true', help="short execution version if true")
   args = parser.parse_args()
   logging.debug(f'options={args}')
   return args
+
 
 def main(options=options):
   logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
@@ -36,7 +46,9 @@ def main(options=options):
   df_reserving = bc.read_booklist(options.reserve_file)
   df_reading_or_reserving = pd.concat([df_reading, df_reserving])
   # get book status
-  status_series = bc.create_all_book_status(df_not_read, df_reading_or_reserving, short=options.short)
+  status_series = bc.create_all_book_status(df_not_read,
+                                            df_reading_or_reserving,
+                                            short=options.short)
   df_not_read['waitstatus'] = status_series
   # output dataframe to file
   # 注: 現在借りている本が読みたいラベルの本リストに存在しているとは限らないので、

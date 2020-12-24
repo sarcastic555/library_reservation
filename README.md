@@ -1,5 +1,9 @@
 # library_reservation
 
+## 処理フロー
+![flow](https://user-images.githubusercontent.com/29055397/103096508-784f0900-4647-11eb-84ef-67468a5cc8a1.png)
+
+## 使い方
 0. 準備
 ```bash
 git clone https://github.com/sarcastic555/library_reservation.git
@@ -55,7 +59,7 @@ python ./clear_reserve_basket.py
 python reserve_book.py --shortwait_reserve_list list/shortwait_reserve_list.csv --longwait_reserve_list list/longwait_reserve_list.csv
 ```
 
-# ツール
+## ツール
 フォーマッター
 ```
 ./formatter.sh

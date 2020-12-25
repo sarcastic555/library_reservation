@@ -204,6 +204,7 @@ pipeline{
                     echo "======== Executing Formatter test ========"
                     sh "yapf --diff --recursive ."
                     sh "py.test --isort"
+                    sh "pyflakes ."
                 }
             }
         }

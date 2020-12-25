@@ -1,23 +1,17 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
-import codecs
 import datetime
 import logging
 import os
-import random
 import re
-import sys
 import time
 import warnings
 from typing import Dict, Tuple
 
 import bs4
-import html5lib
-import numpy as np
-import pandas as pd
 import requests
 
-from BookInfo import *
+from tools.book_info import RentalBookInfo, ReserveBookInfo
 from tools.ichikawa_data.header_param_info import HeaderParamInfo
 from tools.ichikawa_data.ichikawa_url import IchikawaURL
 
@@ -129,8 +123,6 @@ class IchikawaModule:
       time.sleep(self.sleeptime)
       r = self.session.get(IchikawaURL.reserve_list, headers=self.header, params={'page': page})
     soup_list = bs4.BeautifulSoup(r.text, "html5lib")
-    hoge = soup_list.find('ol', class_='list-book result hook-check-all').find_all(
-        'div', class_='lyt-image image-small')[bookid % 10]
     try:
       status = soup_list.find('ol', class_='list-book result hook-check-all').find_all(
           'div', class_='lyt-image image-small')[bookid % 10].find(
@@ -206,7 +198,7 @@ class IchikawaModule:
     return totalnum
 
   def get_num_of_reserve_basket_books(self) -> int:
-    logging.info(f"IchikawaModule::get_num_of_reserve_basket_books called")
+    logging.info("IchikawaModule::get_num_of_reserve_basket_books called")
     time.sleep(self.sleeptime)
     r = self.session.get(IchikawaURL.basket, headers=self.header)
     soup = bs4.BeautifulSoup(r.text, "html5lib")
@@ -321,6 +313,7 @@ class IchikawaModule:
       return False
     ##  1 ～ 1 件（全1 件）-> 1
     searchlistnum = int(re.search('（全([0-9]+) 件）', searchlistnum_text.strip())[1])
+    logging.info(f"{searchlistnum} books are found in total.")
 
     # 予約画面に遷移
     time.sleep(self.sleeptime)
@@ -358,7 +351,7 @@ class IchikawaModule:
     logging.info("IchikawaModule::close_session called")
     ### ログアウトして、sessionを終了して終わる
     time.sleep(self.sleeptime)
-    r = self.session.get(IchikawaURL.logout, headers=self.header)
+    self.session.get(IchikawaURL.logout, headers=self.header)
     self.session.close()
 
   def __del__(self):

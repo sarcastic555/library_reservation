@@ -3,9 +3,10 @@ import logging
 import os
 
 import pandas as pd
-import pdfkit
 
-from src.reserve_book_info_evaluator import *
+from src.reserve_book_info_evaluator import (NowLendingListInfo,
+                                             NowReservingListInfo,
+                                             ReserveListInfo)
 
 
 def options() -> argparse:

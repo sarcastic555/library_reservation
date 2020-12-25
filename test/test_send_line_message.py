@@ -1,12 +1,11 @@
 import os
 import sys
-from unittest import mock
 
-import pandas as pd
+import numpy as np
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/.."))
 
-from send_line_message import *
+from send_line_message import need_to_send_notification, send_line_notify
 
 
 def test_send_line_notify() -> None:
@@ -17,29 +16,19 @@ def test_send_line_notify() -> None:
   assert (result)
 
 
-# 借りている本が存在しない時は通知不要と判定する
+# 返却日までの残り日数が無効値（借りている書籍がない）の時は通知不要と判定する
 def test_need_to_send_notification1() -> None:
-  df = pd.DataFrame()
-  result = need_to_send_notification(df=df)
+  result = need_to_send_notification(remainday=np.nan)
   assert (not result)
 
 
-# 借りている本が存在し残り日数が十分あるときは通知不要と判定
+# 残り日数が十分あるときは通知不要と判定
 def test_need_to_send_notification2() -> None:
-  df = pd.DataFrame({'remainday': [10, 12]})
-  result = need_to_send_notification(df=df)
+  result = need_to_send_notification(remainday=10)
   assert (not result)
 
 
-# 借りている本が存在し1冊でも残り日数が不十分なときは通知判定
+# 残り日数が不十分なときは通知判定
 def test_need_to_send_notification3() -> None:
-  df = pd.DataFrame({'remainday': [1, 12]})
-  result = need_to_send_notification(df=df)
-  assert (result)
-
-
-# 借りている本が存在し全ての本の残り日数が不十分なときも通知判定
-def test_need_to_send_notification4() -> None:
-  df = pd.DataFrame({'remainday': [1, 0]})
-  result = need_to_send_notification(df=df)
+  result = need_to_send_notification(remainday=1)
   assert (result)

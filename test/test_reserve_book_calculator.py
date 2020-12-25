@@ -3,12 +3,9 @@ import os
 import sys
 from unittest import mock
 
-from mock import MagicMock, Mock
-
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../"))
 
-from reserve_book_calculator import *
-from src.reserve_book_info_evaluator import *
+from reserve_book_calculator import calculate_reserve_book_num
 
 
 # 予約枠が余っているときはshortwaitとlongwaitを1冊ずつ予約

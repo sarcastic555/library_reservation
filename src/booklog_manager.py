@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-import csv
 import datetime
 import logging
 import os
 import re
-import sys
 import time
 
 import bs4
@@ -36,13 +34,13 @@ class BooklogManager:
 
     self.login()
 
-  def generate_login_header(self, session_id):
+  def generate_login_header(self, session_id) -> dict:
     header = {}
     header['cookie'] = f"PHPSESSID={session_id}"
     header['referer'] = self.__class__.login_URL
     return header
 
-  def generate_login_data(self, account, password):
+  def generate_login_data(self, account, password) -> dict:
     data = {}
     data['service'] = 'booklog'
     data['ref'] = ''
@@ -50,7 +48,7 @@ class BooklogManager:
     data['password'] = password
     return data
 
-  def login(self):
+  def login(self) -> None:
     logging.info("BooklogManager::login called")
     time.sleep(self.sleep_time)
     self.session.get(self.__class__.login_URL)
@@ -60,7 +58,7 @@ class BooklogManager:
                       data=self.login_data,
                       allow_redirects=True)
 
-  def get_signature(self):
+  def get_signature(self) -> str:
     logging.info("BooklogManager::get_signature called")
     time.sleep(self.sleep_time)
     r = self.session.get(self.__class__.export_URL)
@@ -80,7 +78,7 @@ class BooklogManager:
     r.encoding = 'Shift_JIS'  ## これがないと文字化けする
     return r.text
 
-  def logout(self):
+  def logout(self) -> None:
     logging.info("BooklogManager::logout called")
     ## ログアウト
     time.sleep(self.sleep_time)

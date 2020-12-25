@@ -1,5 +1,3 @@
-import argparse
-import datetime
 import logging
 import os
 import time
@@ -22,7 +20,7 @@ class BookClassifier:
     self.sleeptime = sleep  # [sec]
     logging.info(f"sleep time = {self.sleeptime} sec")
 
-  def get_want_read_book_list(self, booklist_file):
+  def get_want_read_book_list(self, booklist_file) -> pd.DataFrame:
     logging.info("BookClassifier::get_want_read_book_list called")
     logging.info(f"reading {booklist_file} as all book list file")
     df = pd.read_csv(booklist_file, encoding="utf-8", header=None, names=self.__class__.columnname)
@@ -39,7 +37,7 @@ class BookClassifier:
     logging.info("Number of want read book = %d" % len(df))
     return df
 
-  def read_booklist(self, booklist_file):
+  def read_booklist(self, booklist_file) -> pd.DataFrame:
     logging.info("BookClassifier::read_booklist called")
     logging.info(f"reading {booklist_file} as now reading list file")
     if not os.path.exists(booklist_file):
@@ -55,7 +53,7 @@ class BookClassifier:
     else:
       return len(nowreading_df[nowreading_df['ISBN'] == int(book_info['13桁ISBN'])]) != 0
 
-  def evaluate_book_status(self, book_info, nowreading_df):
+  def evaluate_book_status(self, book_info, nowreading_df) -> str:
     if (np.isnan(book_info['13桁ISBN'])):
       return 'not_found'
     if self.book_is_rental_or_reserving(book_info, nowreading_df):
@@ -71,7 +69,7 @@ class BookClassifier:
     else:
       return 'not_found'
 
-  def create_all_book_status(self, notread_df, nowreading_df, short=False):
+  def create_all_book_status(self, notread_df, nowreading_df, short=False) -> pd.Series:
     logging.info(f"BookClassifier::create_all_book_status (short={short}) called")
     book_status_list = []
     # decrease target book num in short execution version

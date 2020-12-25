@@ -4,9 +4,7 @@ import datetime
 import logging
 import warnings
 
-import pandas as pd
-
-from tools.tool_ichikawa import *
+from tools.tool_ichikawa import IchikawaModule
 
 
 ## 対象書籍が貸し出し延長対象であるかを判定する

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 import json
 import os
-import sys
 import time
 import warnings
 from typing import Tuple
@@ -39,7 +38,6 @@ class CulilModule():
         continue_flag = int(json_data['continue'])
 
       existlist = json_data['books'][ISBN][self.systemid]['libkey']
-      existlibnum = len(existlist)
       renting_possible_flag = False  ## 本が蔵書しているかを表すフラグ
       renting_soon_flag = False  ## 本がすぐに予約可能かを表すフラグ
       for ilib in existlist:

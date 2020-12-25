@@ -1,11 +1,9 @@
 import os
 import sys
-from unittest import mock
 
 import numpy as np
 import pandas as pd
 import pytest
-from mock import MagicMock, Mock
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../"))
 

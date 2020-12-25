@@ -1,8 +1,5 @@
-import logging
 import os
-import random
 import warnings
-from typing import List
 
 import numpy as np
 import pandas as pd
@@ -21,10 +18,10 @@ class NowLendingListInfo:
       self.__minimum_remain_day = np.nan if len(df) == 0 else df['remainday'].min()
 
   # 単体テストのためにgetterを作成する
-  def nowlending_num(self):
+  def nowlending_num(self) -> int:
     return self.__nowlending_num
 
-  def minimum_remain_day(self):
+  def minimum_remain_day(self) -> int:
     return self.__minimum_remain_day
 
 
@@ -43,13 +40,13 @@ class NowReservingListInfo:
       self.__longwait_book_num = len(df[(df['waitnum'] > 1) & (df['waitnum'] != 99)])
 
   # 単体テストのためにgetterを作成する
-  def prepared_book_num(self):
+  def prepared_book_num(self) -> int:
     return self.__prepared_book_num
 
-  def shortwait_book_num(self):
+  def shortwait_book_num(self) -> int:
     return self.__shortwait_book_num
 
-  def longwait_book_num(self):
+  def longwait_book_num(self) -> int:
     return self.__longwait_book_num
 
 
@@ -59,5 +56,6 @@ class ReserveListInfo:
     df = pd.read_csv(filename)
     self.__candidate_list_size = len(df)
 
-  def candidate_list_size(self):
+  # 単体テストのためにgetterを作成する
+  def candidate_list_size(self) -> int:
     return self.__candidate_list_size

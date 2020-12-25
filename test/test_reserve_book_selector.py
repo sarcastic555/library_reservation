@@ -1,14 +1,11 @@
-import argparse
 import os
 import sys
-from unittest import mock
 
 import pandas as pd
-from mock import MagicMock, Mock
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../"))
 
-from reserve_book_selector import *
+from reserve_book_selector import get_reserve_isbn_list
 
 
 # 予約冊数が0の場合は空の予約リストが出力される

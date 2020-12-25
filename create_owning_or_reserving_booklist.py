@@ -3,11 +3,13 @@
 import argparse
 import datetime
 import logging
+import os
+import re
 import warnings
 
 import pandas as pd
 
-from tools.tool_ichikawa import *
+from tools.tool_ichikawa import IchikawaModule
 
 
 def options() -> argparse:

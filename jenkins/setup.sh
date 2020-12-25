@@ -39,3 +39,6 @@ sudo service jenkins start
 # Install "Docker pipeline" and from Dashboad -> Plugin manager
 # Register environmental variable from Jenkins Manager -> System Configuration
 
+## If you want reboot jenkins, type
+# sudo service jenkins restart
+

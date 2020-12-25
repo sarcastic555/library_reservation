@@ -208,5 +208,27 @@ pipeline{
                 }
             }
         }
+        stage("Report"){
+          agent {
+            docker {
+              image 'library_reservation:latest'
+              args '-e TZ=Asia/Tokyo'
+            }
+          }
+          environment {
+            result_dir = "${dirname}/result"
+          }
+          steps{
+            publishHTML([
+              allowMissing: false,
+              alwaysLinkToLastBuild: true,
+              keepAll: true,
+              reportDir: "${result_dir}",
+              reportFiles: 'report.html',
+              reportName: 'reserve_book_calculation_report',
+              reportTitles: ''
+            ])
+          }
+        }
     }
 }

@@ -46,7 +46,10 @@ def main(options: argparse):
   df = pd.read_csv(options.lend_file)
   remainday = get_minimun_remain_day(df)
   if need_to_send_notification(remainday):
+    logging.info(f"Send line message (remainday = {remainday})")
     send_line_notify(f"市川図書館返却日まであと{remainday}日")
+  else:
+    logging.info(f"Line message is not sent (remainday = {remainday})")
 
 
 if __name__ == "__main__":

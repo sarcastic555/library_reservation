@@ -209,6 +209,8 @@ def main(options) -> None:
   df = calculate_reserve_book_num(options=options)
   shortwait_reserve = df.iloc[-1]['shortwait']
   longwait_reserve = df.iloc[-1]['longwait']
+  logging.info(f"Result: shortwait reserve book num = {shortwait_reserve}")
+  logging.info(f"Result: longwait reserve book num = {longwait_reserve}")
 
   # 数字の遷移をhtmlとして出力
   output_df_to_html(df, options.output_report_file)

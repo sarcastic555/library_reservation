@@ -141,7 +141,7 @@ def calculate_reserve_book_num(options: argparse) -> pd.DataFrame:
       {
           'index': 6,
           'column': 'remain day for return',
-          'shortwait': nowlend.minimum_remain_day()
+          'common': "%d days" % nowlend.minimum_remain_day()
       },
       ignore_index=True)
   if (nowlend.minimum_remain_day() < 2) or (nowlend.minimum_remain_day() > 8):
@@ -149,7 +149,7 @@ def calculate_reserve_book_num(options: argparse) -> pd.DataFrame:
   df = df.append(
       {
           'index': 7,
-          'column': 'candidate (3,4)',
+          'column': 'candidate (5,6)',
           'shortwait': shortwait_reserve,
           'longwait': longwait_reserve
       },

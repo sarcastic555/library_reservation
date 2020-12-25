@@ -4,8 +4,7 @@ from unittest import mock
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../"))
 
-from create_owning_or_reserving_booklist import (get_rental_book_df,
-                                                 get_reserving_book_df,
+from create_owning_or_reserving_booklist import (get_rental_book_df, get_reserving_book_df,
                                                  get_waitnum_from_status)
 #from tools.tool_ichikawa import *
 from tools.book_info import RentalBookInfo, ReserveBookInfo

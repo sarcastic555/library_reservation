@@ -6,8 +6,7 @@ from freezegun import freeze_time
 from mock import Mock
 
 sys.path.append(os.path.realpath(os.path.dirname(__file__) + "/../"))
-from extension_checker import (is_extension_available,
-                               is_rental_extension_target)
+from extension_checker import (is_extension_available, is_rental_extension_target)
 
 
 # 処理可能時刻

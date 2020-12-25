@@ -4,8 +4,7 @@ import os
 
 import pandas as pd
 
-from src.reserve_book_info_evaluator import (NowLendingListInfo,
-                                             NowReservingListInfo,
+from src.reserve_book_info_evaluator import (NowLendingListInfo, NowReservingListInfo,
                                              ReserveListInfo)
 
 

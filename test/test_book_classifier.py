@@ -16,7 +16,7 @@ test_data_path = os.path.join(os.path.dirname(__file__), 'data')
 # 1冊のみ抽出されることが期待値
 def test_get_want_read_book_list() -> None:
   bc = BookClassifier(sleep=0)
-  df = bc.get_want_read_book_list(os.path.join(test_data_path, 'booklog_list.csv'))
+  df = bc.get_want_read_book_list(os.path.join(test_data_path, 'booklog_sample.csv'))
   assert (len(df) == 1)
 
 

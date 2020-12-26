@@ -45,6 +45,7 @@ def test_get_waitnum_from_status7() -> None:
   assert (waitnum == 14)
 
 
+# リストサイズが0の時は出力dataframeのサイズも0であることのテスト
 @mock.patch('tools.tool_ichikawa.IchikawaModule.__init__')
 @mock.patch('tools.tool_ichikawa.IchikawaModule.__del__')
 @mock.patch('tools.tool_ichikawa.IchikawaModule.get_num_of_total_books')
@@ -56,6 +57,7 @@ def test_get_lend_df1(mock_book_num, mock_del, mock_init) -> None:
   assert (len(df) == 0)
 
 
+# リストサイズ1のデータを読んでdataframeに反映されることのテスト
 @mock.patch('tools.tool_ichikawa.IchikawaModule.__init__')
 @mock.patch('tools.tool_ichikawa.IchikawaModule.__del__')
 @mock.patch('tools.tool_ichikawa.IchikawaModule.get_num_of_total_books')
@@ -66,9 +68,68 @@ def test_get_lend_df2(mock_book_info, mock_book_num, mock_del, mock_init) -> Non
   mock_book_num.return_value = 1
   book_info = RentalBookInfo()
   book_info.title = 'book_title'
+  book_info.isbn = '111111'
   mock_book_info.return_value = book_info
-  df = get_rental_book_df(sleep=0)
+  booklog_sample_file = os.path.join(os.path.dirname(__file__), 'data/booklog_sample.csv')
+  df = get_rental_book_df(sleep=0, booklog_file=booklog_sample_file)
   assert (df['title'].iloc[0] == 'book_title')
+
+
+# 読書状況statusの確認1: ブクログデータリストにない本の読書完了状況は読み終わっていない判定されること
+@mock.patch('tools.tool_ichikawa.IchikawaModule.__init__')
+@mock.patch('tools.tool_ichikawa.IchikawaModule.__del__')
+@mock.patch('tools.tool_ichikawa.IchikawaModule.get_num_of_total_books')
+@mock.patch('tools.tool_ichikawa.IchikawaModule.get_rental_book_information')
+def test_get_lend_df3(mock_book_info, mock_book_num, mock_del, mock_init) -> None:
+  mock_init.return_value = None
+  mock_del.return_value = None
+  mock_book_num.return_value = 1
+  book_info = RentalBookInfo()
+  book_info.title = 'book_title'
+  book_info.isbn = '1111'
+  mock_book_info.return_value = book_info
+  booklog_sample_file = os.path.join(os.path.dirname(__file__), 'data/booklog_sample.csv')
+  df = get_rental_book_df(sleep=0, booklog_file=booklog_sample_file)
+  read_completed = df['read_completed'].iloc[0]
+  assert (read_completed == 0)  # 0: 読み終わっていない
+
+
+# 読書状況statusの確認2: ブクログデータリストで読み終わった本の読書完了状況はTrueとなること
+@mock.patch('tools.tool_ichikawa.IchikawaModule.__init__')
+@mock.patch('tools.tool_ichikawa.IchikawaModule.__del__')
+@mock.patch('tools.tool_ichikawa.IchikawaModule.get_num_of_total_books')
+@mock.patch('tools.tool_ichikawa.IchikawaModule.get_rental_book_information')
+def test_get_lend_df4(mock_book_info, mock_book_num, mock_del, mock_init) -> None:
+  mock_init.return_value = None
+  mock_del.return_value = None
+  mock_book_num.return_value = 1
+  book_info = RentalBookInfo()
+  book_info.title = 'book_title'
+  book_info.isbn = '9784022645241'
+  mock_book_info.return_value = book_info
+  booklog_sample_file = os.path.join(os.path.dirname(__file__), 'data/booklog_sample.csv')
+  df = get_rental_book_df(sleep=0, booklog_file=booklog_sample_file)
+  read_completed = df['read_completed'].iloc[0]
+  assert (read_completed == 1)  # 1: 読み終わっている
+
+
+# 読書状況statusの確認2: ブクログデータリストで読みたい本の読書完了状況はFalseとなること
+@mock.patch('tools.tool_ichikawa.IchikawaModule.__init__')
+@mock.patch('tools.tool_ichikawa.IchikawaModule.__del__')
+@mock.patch('tools.tool_ichikawa.IchikawaModule.get_num_of_total_books')
+@mock.patch('tools.tool_ichikawa.IchikawaModule.get_rental_book_information')
+def test_get_lend_df5(mock_book_info, mock_book_num, mock_del, mock_init) -> None:
+  mock_init.return_value = None
+  mock_del.return_value = None
+  mock_book_num.return_value = 1
+  book_info = RentalBookInfo()
+  book_info.title = 'book_title'
+  book_info.isbn = '9784167110062'
+  mock_book_info.return_value = book_info
+  booklog_sample_file = os.path.join(os.path.dirname(__file__), 'data/booklog_sample.csv')
+  df = get_rental_book_df(sleep=0, booklog_file=booklog_sample_file)
+  read_completed = df['read_completed'].iloc[0]
+  assert (read_completed == 0)  # 0: 読み終わっていない
 
 
 @mock.patch('tools.tool_ichikawa.IchikawaModule.__init__')

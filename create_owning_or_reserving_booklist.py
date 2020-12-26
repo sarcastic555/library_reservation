@@ -9,11 +9,15 @@ import warnings
 
 import pandas as pd
 
+from src.booklog_data_handler import BooklogDataHandler
 from tools.tool_ichikawa import IchikawaModule
 
 
 def options() -> argparse:
   parser = argparse.ArgumentParser()
+  parser.add_argument('--booklog_list_file',
+                      help='[Optional] Input path to book log list file',
+                      default=None)
   parser.add_argument('--lend_output_file',
                       help='Path to output lend book list.',
                       default='list/lend.csv')
@@ -46,27 +50,34 @@ def get_waitnum_from_status(book_status) -> int:
   return waitnum
 
 
-def get_rental_book_df(sleep=3) -> pd.DataFrame:
+def get_rental_book_df(sleep=3, booklog_file=None) -> pd.DataFrame:
   columnname = ['title', 'ISBN', 'returndate', 'remainday', 'enableextension']
   df = pd.DataFrame(index=[], columns=columnname)
   ## 合計冊数情報を取得
   tool = IchikawaModule(sleep=sleep)
   total_num = tool.get_num_of_total_books("lend")
   logging.info(f"Total number of books = {total_num}")
+  ## [Optional] ブクログデータが指定されている場合は、借用中資料が既に読み終わったかの判定を実施する
+  booklog_handler = BooklogDataHandler(booklog_file) if booklog_file is not None else None
+
   ## 各資料の情報を取得
   for bookid in range(total_num):
     logging.info(f"checking information of bookid {bookid}")
     info = tool.get_rental_book_information(bookid)
     todaydatetime = datetime.date.today()
     remain_day_for_return = (info.return_datetime_after_extension - todaydatetime).days
+    read_completed = booklog_handler.read_completed(
+        info.isbn) if booklog_handler is not None else False
     df = df.append(pd.Series({
         "title": info.title,
         "ISBN": info.isbn,
         "returndate": info.return_datetime_before_extension.strftime("%Y/%m/%d"),
         "remainday": remain_day_for_return,
-        "enableextension": info.can_rental_extension
+        "enableextension": info.can_rental_extension,
+        "read_completed": int(read_completed),
     }),
                    ignore_index=True)
+    df = df.astype({"read_completed": int})
   return df
 
 
@@ -102,7 +113,7 @@ def get_reserving_book_df(sleep=3) -> pd.DataFrame:
 
 def main(options: argparse):
   # 貸し出し中の資料リストの作成
-  df_lend = get_rental_book_df()
+  df_lend = get_rental_book_df(booklog_file=options.booklog_list_file)
   logging.info("rental book size = %d" % len(df_lend))
   os.makedirs(os.path.dirname(options.lend_output_file), exist_ok=True)
   df_lend.to_csv(options.lend_output_file)

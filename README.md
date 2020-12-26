@@ -24,7 +24,7 @@ python extension_checker.py
 
 3. 借りている本、予約している本のリストを作成
 ```bash
-python ./create_owning_or_reserving_booklist.py --lend_output_file list/lend.csv --reserve_output_file list/reserve.csv
+python ./create_owning_or_reserving_booklist.py --booklog_list_file list/booklog_data.csv --lend_output_file list/lend.csv --reserve_output_file list/reserve.csv
 ```
 
 4. 1.でダウンロードしたブックリストを既読・未読即時利用可能・未読即時利用不可に分類  

@@ -84,7 +84,7 @@ pipeline{
             steps{
                 dir("./${dirname}"){
                     echo "======== Executing Create Owning or Reserving Booklist ========"
-                    sh "python ./create_owning_or_reserving_booklist.py --lend_output_file list/lend.csv --reserve_output_file list/reserve.csv"
+                    sh "python ./create_owning_or_reserving_booklist.py --booklog_list_file ./list/booklog_data.csv --lend_output_file list/lend.csv --reserve_output_file list/reserve.csv"
                 }
             }
         }

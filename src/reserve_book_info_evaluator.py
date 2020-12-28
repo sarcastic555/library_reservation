@@ -12,10 +12,12 @@ class NowLendingListInfo:
       warnings.warn(f"{filename} not found. Skip reading nowreading file.")
       self.__nowlending_num = 0
       self.__minimum_remain_day = np.nan
+      self.__read_comnplete_num = 0
     else:
       df = pd.read_csv(filename)
       self.__nowlending_num = len(df)
       self.__minimum_remain_day = np.nan if len(df) == 0 else df['remainday'].min()
+      self.__read_comnplete_num = (df['read_completed'] == 1).sum()
 
   # 単体テストのためにgetterを作成する
   def nowlending_num(self) -> int:
@@ -23,6 +25,9 @@ class NowLendingListInfo:
 
   def minimum_remain_day(self) -> int:
     return self.__minimum_remain_day
+
+  def read_comnplete_num(self) -> int:
+    return self.__read_comnplete_num
 
 
 class NowReservingListInfo:

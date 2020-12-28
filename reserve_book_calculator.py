@@ -137,6 +137,7 @@ def calculate_reserve_book_num(options: argparse) -> pd.DataFrame:
       ignore_index=True)
 
   # 2: 返却期限日が近づいていない場合はshortwaitの冊数を0にする
+  # ただし返却期限日が近くなくても,読み終わっていない本が少ない場合はshortwaitの冊数を0にしない
   df = df.append(
       {
           'index': 6,
@@ -144,12 +145,20 @@ def calculate_reserve_book_num(options: argparse) -> pd.DataFrame:
           'common': "%d days" % nowlend.minimum_remain_day()
       },
       ignore_index=True)
-  if (nowlend.minimum_remain_day() < 2) or (nowlend.minimum_remain_day() > 8):
-    shortwait_reserve = 0
   df = df.append(
       {
           'index': 7,
-          'column': 'candidate (5,6)',
+          'column': 'read uncompleted book',
+          'common': nowlend.nowlending_num() - nowlend.read_comnplete_num()
+      },
+      ignore_index=True)
+  if ((nowlend.minimum_remain_day() < 2) or (nowlend.minimum_remain_day() > 8)) and (
+      nowlend.nowlending_num() - nowlend.read_comnplete_num() > 2):
+    shortwait_reserve = 0
+  df = df.append(
+      {
+          'index': 8,
+          'column': 'candidate (5,6,7)',
           'shortwait': shortwait_reserve,
           'longwait': longwait_reserve
       },
@@ -158,7 +167,7 @@ def calculate_reserve_book_num(options: argparse) -> pd.DataFrame:
   # 3: 予約したい本リストの登録冊数を越えて予約することを防ぐためのガード処理
   df = df.append(
       {
-          'index': 8,
+          'index': 9,
           'column': 'reservation candidate size',
           'shortwait': no_reservation.candidate_list_size(),
           'longwait': has_reservation.candidate_list_size()
@@ -168,8 +177,8 @@ def calculate_reserve_book_num(options: argparse) -> pd.DataFrame:
   longwait_reserve = min(longwait_reserve, has_reservation.candidate_list_size())
   df = df.append(
       {
-          'index': 9,
-          'column': 'candidate (5, 6)',
+          'index': 10,
+          'column': 'candidate (8, 9)',
           'shortwait': shortwait_reserve,
           'longwait': longwait_reserve
       },
@@ -177,7 +186,7 @@ def calculate_reserve_book_num(options: argparse) -> pd.DataFrame:
 
   # 4: 1日の予約冊数の上限をかける
   df = df.append({
-      'index': 10,
+      'index': 11,
       'column': 'max reserve per day',
       'shortwait': reservenum_per_day
   },
@@ -185,8 +194,8 @@ def calculate_reserve_book_num(options: argparse) -> pd.DataFrame:
   shortwait_reserve = min(shortwait_reserve, reservenum_per_day)
   df = df.append(
       {
-          'index': 11,
-          'column': 'candidate (7,8)',
+          'index': 12,
+          'column': 'candidate (10,11)',
           'shortwait': shortwait_reserve,
           'longwait': longwait_reserve
       },
@@ -195,7 +204,7 @@ def calculate_reserve_book_num(options: argparse) -> pd.DataFrame:
   # 8: 最終結果
   df = df.append(
       {
-          'index': 12,
+          'index': 13,
           'column': 'final result',
           'shortwait': shortwait_reserve,
           'longwait': longwait_reserve

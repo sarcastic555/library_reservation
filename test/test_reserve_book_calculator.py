@@ -176,15 +176,20 @@ def test_reserve_book_info7(longwait, shortwait, prepared, remainday) -> None:
   assert (longwait_reserve == 0)
 
 
-# 返却期限が遠い時はshortwaitのみ予約しない
+# 返却期限が遠く、読み終わっている本が少ない時はshortwaitのみ予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
+@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.nowlending_num')
+@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.read_comnplete_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.prepared_book_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.shortwait_book_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.longwait_book_num')
-def test_reserve_book_info8(longwait, shortwait, prepared, remainday) -> None:
+def test_reserve_book_info8(longwait, shortwait, prepared, read_complete, nowlending,
+                            remainday) -> None:
   longwait.return_value = 1
   shortwait.return_value = 1
   prepared.return_value = 1
+  read_complete.return_value = 0
+  nowlending.return_value = 5
   remainday.return_value = 13
 
   options = argparse.ArgumentParser()
@@ -200,15 +205,20 @@ def test_reserve_book_info8(longwait, shortwait, prepared, remainday) -> None:
   assert (longwait_reserve == 1)
 
 
-# 返却期限が近すぎるはshortwaitのみ予約しない
+# 返却期限が近すぎて、かつ読み終わっている本が少ない時はshortwaitのみ予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
+@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.nowlending_num')
+@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.read_comnplete_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.prepared_book_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.shortwait_book_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.longwait_book_num')
-def test_reserve_book_info9(longwait, shortwait, prepared, remainday) -> None:
+def test_reserve_book_info9(longwait, shortwait, prepared, read_complete, nowlending,
+                            remainday) -> None:
   longwait.return_value = 1
   shortwait.return_value = 1
   prepared.return_value = 1
+  read_complete.return_value = 0
+  nowlending.return_value = 5
   remainday.return_value = 0
 
   options = argparse.ArgumentParser()
@@ -221,4 +231,33 @@ def test_reserve_book_info9(longwait, shortwait, prepared, remainday) -> None:
   shortwait_reserve = df.iloc[-1]['shortwait']
   longwait_reserve = df.iloc[-1]['longwait']
   assert (shortwait_reserve == 0)
+  assert (longwait_reserve == 1)
+
+
+# 返却期限が遠すぎても読み終わっていない本が残っていないときはshortwaitも予約する
+@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
+@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.nowlending_num')
+@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.read_comnplete_num')
+@mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.prepared_book_num')
+@mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.shortwait_book_num')
+@mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.longwait_book_num')
+def test_reserve_book_info10(longwait, shortwait, prepared, read_complete, nowlending,
+                             remainday) -> None:
+  longwait.return_value = 1
+  shortwait.return_value = 1
+  prepared.return_value = 1
+  read_complete.return_value = 4
+  nowlending.return_value = 5
+  remainday.return_value = 0
+
+  options = argparse.ArgumentParser()
+  options.now_lend_file = os.path.join(os.path.dirname(__file__), 'data/sample2.csv')
+  options.now_reserve_file = options.now_lend_file
+  options.no_reservation_file = options.now_lend_file
+  options.has_reservation_file = options.now_lend_file
+  df = calculate_reserve_book_num(options)
+
+  shortwait_reserve = df.iloc[-1]['shortwait']
+  longwait_reserve = df.iloc[-1]['longwait']
+  assert (shortwait_reserve == 1)
   assert (longwait_reserve == 1)

@@ -3,6 +3,7 @@
 import json
 import os
 import time
+import traceback
 import warnings
 from typing import Tuple
 
@@ -54,6 +55,7 @@ class CulilModule():
 
     except:  ## エラーが出た場合はその旨をprintして処理を続ける
       warnings.warn(f"Cannot get book (ISBN = {ISBN}) information. Skip the process.")
+      traceback.print_exc()
       renting_possible_flag = False
       renting_soon_flag = False
     return renting_possible_flag, renting_soon_flag

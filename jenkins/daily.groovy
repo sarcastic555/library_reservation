@@ -231,4 +231,23 @@ pipeline{
       }
     }
   }
+  post {
+    always {
+      echo "Post process"
+    }
+    success {
+      echo "Build success!"
+      script {
+        def message = "Jenkins build succeeded!"
+        sh  "curl 'https://notify-api.line.me/api/notify' -H 'Authorization: Bearer ${LINE_TOKEN_FOR_TEST}' -F 'message=${message}'"
+      }
+    }
+    failure {
+      echo "Build failure!"
+      script {
+        def message = "Jenkins build failed!"
+        sh  "curl 'https://notify-api.line.me/api/notify' -H 'Authorization: Bearer ${LINE_TOKEN_FOR_TEST}' -F 'message=${message}'"
+      }
+    }
+  }
 }

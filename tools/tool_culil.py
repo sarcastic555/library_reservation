@@ -1,61 +1,59 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
 import json
+import logging
 import os
 import time
-import traceback
-import warnings
 from typing import Tuple
 
 import requests
+from retry import retry
+
+
+class CulilException(Exception):
+  pass
 
 
 class CulilModule():
 
   def __init__(self, sleep=3):
     self.app_key = os.environ["CULIL_API_KEY"]
-    self.app_key = '0969d68ad9bcd0e5c3f5119a7342933b'
     self.URL_culil = 'http://api.calil.jp/check'
     self.systemid = 'Chiba_Ichikawa'
     self.format = 'json'
     self.sleeptime = sleep  ## [sec]
+    self.param = {'appkey': self.app_key, 'systemid': self.systemid, 'format': self.format}
 
-  def check_existence_in_library(self, ISBN: str) -> Tuple[bool, bool]:
+  @retry(CulilException, tries=5, delay=4)
+  def get_book_status_info(self, ISBN: str) -> dict:
     if type(ISBN) is not str:
       raise TypeError("type of ISBN is %s, but str is expected" % type(ISBN))
+    self.param['isbn'] = ISBN
     time.sleep(self.sleeptime)
-    param = {'appkey': self.app_key, 'isbn': ISBN, 'systemid': self.systemid, 'format': self.format}
-    continue_flag = 1
+    r = requests.get(self.URL_culil, params=self.param)
+    json_data = json.loads(r.text[9:-2])  ## jsonデータがcallback()で囲まれてしまっているので、[9:-2]でcallbackを削除する
+    continue_flag = int(json_data['continue'])
+    if continue_flag == 1:  # continueフラグが1の場合はまだ全ての取得が完了していないことを表す
+      raise CulilException
+    status = json_data['books'][ISBN][self.systemid]['status']
+    if status in {'Error', 'Running'}:  # データ取得に失敗
+      raise CulilException
+    if 'libkey' not in json_data['books'][ISBN][self.systemid]:  # 図書館蔵書情報を表すキーが存在しない
+      raise CulilException
+    return json_data['books'][ISBN][self.systemid]['libkey']
 
-    try:
-      while (continue_flag == 1):  ### continueフラグが1の場合はget操作を繰り返す
-        r = requests.get(self.URL_culil, params=param)
-        time.sleep(self.sleeptime)
-        try:
-          json_data = json.loads(
-              r.text[9:-2])  ## jsonデータがcallback()で囲まれてしまっているので、[9:-2]でcallbackを削除する
-        except:
-          warnings.warn(f"Cannot get book (ISBN = {ISBN}) information. Skip the process.")
-        continue_flag = int(json_data['continue'])
-
-      existlist = json_data['books'][ISBN][self.systemid]['libkey']
-      renting_possible_flag = False  ## 本が蔵書しているかを表すフラグ
-      renting_soon_flag = False  ## 本がすぐに予約可能かを表すフラグ
-      for ilib in existlist:
-        if (existlist[ilib] == '蔵書なし' or existlist[ilib] == '休館中' or existlist[ilib] == '準備中' or
-            existlist[ilib] == '館内のみ' or existlist[ilib] == '蔵書あり'):
-          continue
-        elif (existlist[ilib] == '貸出中' or existlist[ilib] == '予約中'):
-          renting_possible_flag = True
-        elif (existlist[ilib] == '貸出可'):
-          renting_possible_flag = True
-          renting_soon_flag = True
-        else:
-          print("Error. API return status error.")
-
-    except:  ## エラーが出た場合はその旨をprintして処理を続ける
-      warnings.warn(f"Cannot get book (ISBN = {ISBN}) information. Skip the process.")
-      traceback.print_exc()
-      renting_possible_flag = False
-      renting_soon_flag = False
+  def check_existence_in_library(self, ISBN: str) -> Tuple[bool, bool]:
+    book_status_dict = self.get_book_status_info(ISBN=ISBN)
+    renting_possible_flag = False  ## 本が蔵書しているかを表すフラグ
+    renting_soon_flag = False  ## 本がすぐに予約可能かを表すフラグ
+    for status in book_status_dict.values():
+      if status in {'蔵書なし', '休館中', '準備中', '館内のみ', '蔵書あり'}:
+        continue
+      elif status in {'貸出中', '予約中'}:
+        renting_possible_flag = True
+      elif status == '貸出可':
+        renting_possible_flag = True
+        renting_soon_flag = True
+      else:
+        logging.error("Error. API return status error.")
     return renting_possible_flag, renting_soon_flag

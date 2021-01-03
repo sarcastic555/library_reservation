@@ -19,6 +19,7 @@ class BookClassifier:
     logging.info("BookClassifier constructor called")
     self.sleeptime = sleep  # [sec]
     logging.info(f"sleep time = {self.sleeptime} sec")
+    self.module = tool_culil.CulilModule()
 
   def get_want_read_book_list(self, booklist_file) -> pd.DataFrame:
     logging.info("BookClassifier::get_want_read_book_list called")
@@ -59,8 +60,7 @@ class BookClassifier:
     if self.book_is_rental_or_reserving(book_info, nowreading_df):
       return 'rental_or_reserving'
     ## その他の本
-    module = tool_culil.CulilModule()
-    renting_possible_flag, renting_soon_flag = module.check_existence_in_library(
+    renting_possible_flag, renting_soon_flag = self.module.check_existence_in_library(
         str(book_info['13桁ISBN']))
     if (renting_possible_flag and renting_soon_flag):
       return 'no_reservation'

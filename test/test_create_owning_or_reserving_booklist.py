@@ -53,7 +53,7 @@ def test_get_lend_df1(mock_book_num, mock_del, mock_init) -> None:
   mock_init.return_value = None
   mock_del.return_value = None
   mock_book_num.return_value = 0
-  df = get_rental_book_df(sleep=0)
+  df = get_rental_book_df(sleep=3)
   assert (len(df) == 0)
 
 
@@ -71,7 +71,7 @@ def test_get_lend_df2(mock_book_info, mock_book_num, mock_del, mock_init) -> Non
   book_info.isbn = '111111'
   mock_book_info.return_value = book_info
   booklog_sample_file = os.path.join(os.path.dirname(__file__), 'data/booklog_sample.csv')
-  df = get_rental_book_df(sleep=0, booklog_file=booklog_sample_file)
+  df = get_rental_book_df(sleep=3, booklog_file=booklog_sample_file)
   assert (df['title'].iloc[0] == 'book_title')
 
 
@@ -89,7 +89,7 @@ def test_get_lend_df3(mock_book_info, mock_book_num, mock_del, mock_init) -> Non
   book_info.isbn = '1111'
   mock_book_info.return_value = book_info
   booklog_sample_file = os.path.join(os.path.dirname(__file__), 'data/booklog_sample.csv')
-  df = get_rental_book_df(sleep=0, booklog_file=booklog_sample_file)
+  df = get_rental_book_df(sleep=3, booklog_file=booklog_sample_file)
   read_completed = df['read_completed'].iloc[0]
   assert (read_completed == 0)  # 0: 読み終わっていない
 
@@ -108,7 +108,7 @@ def test_get_lend_df4(mock_book_info, mock_book_num, mock_del, mock_init) -> Non
   book_info.isbn = '9784022645241'
   mock_book_info.return_value = book_info
   booklog_sample_file = os.path.join(os.path.dirname(__file__), 'data/booklog_sample.csv')
-  df = get_rental_book_df(sleep=0, booklog_file=booklog_sample_file)
+  df = get_rental_book_df(sleep=3, booklog_file=booklog_sample_file)
   read_completed = df['read_completed'].iloc[0]
   assert (read_completed == 1)  # 1: 読み終わっている
 
@@ -127,7 +127,7 @@ def test_get_lend_df5(mock_book_info, mock_book_num, mock_del, mock_init) -> Non
   book_info.isbn = '9784167110062'
   mock_book_info.return_value = book_info
   booklog_sample_file = os.path.join(os.path.dirname(__file__), 'data/booklog_sample.csv')
-  df = get_rental_book_df(sleep=0, booklog_file=booklog_sample_file)
+  df = get_rental_book_df(sleep=3, booklog_file=booklog_sample_file)
   read_completed = df['read_completed'].iloc[0]
   assert (read_completed == 0)  # 0: 読み終わっていない
 
@@ -144,7 +144,7 @@ def test_get_reserve_df1(mock_book_info, mock_book_num, mock_del, mock_init) -> 
   book_info.title = 'book_title'
   book_info.reserve_status = '利用可能'
   mock_book_info.return_value = book_info
-  df = get_reserving_book_df(sleep=0)
+  df = get_reserving_book_df(sleep=3)
   assert (len(df) == 1)
   assert (df['title'].iloc[0] == 'book_title')
 
@@ -162,7 +162,7 @@ def test_get_reserve_df2(mock_book_info, mock_book_num, mock_del, mock_init) -> 
   book_info.title = 'book_title'
   book_info.reserve_status = '本人取消'
   mock_book_info.return_value = book_info
-  df = get_reserving_book_df(sleep=0)
+  df = get_reserving_book_df(sleep=3)
   assert (len(df) == 0)
 
 
@@ -179,7 +179,7 @@ def test_get_reserve_df3(mock_book_info, mock_book_num, mock_del, mock_init) -> 
   book_info.title = 'book_title'
   book_info.reserve_status = '期限切れ'
   mock_book_info.return_value = book_info
-  df = get_reserving_book_df(sleep=0)
+  df = get_reserving_book_df(sleep=3)
   assert (len(df) == 0)
 
 
@@ -196,6 +196,6 @@ def test_get_reserve_df4(mock_book_info, mock_book_num, mock_del, mock_init) -> 
   book_info.title = 'book_title'
   book_info.reserve_status = '順番待ち (37位)'
   mock_book_info.return_value = book_info
-  df = get_reserving_book_df(sleep=0)
+  df = get_reserving_book_df(sleep=3)
   assert (len(df) == 1)
   assert (df['waitnum'].iloc[0] == 37)

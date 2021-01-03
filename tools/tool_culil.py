@@ -33,11 +33,14 @@ class CulilModule():
     r = requests.get(self.URL_culil, params=self.param)
     json_data = json.loads(r.text[9:-2])  ## jsonデータがcallback()で囲まれてしまっているので、[9:-2]でcallbackを削除する
     continue_flag = int(json_data['continue'])
-    if continue_flag == 1:  # continueフラグが1の場合はまだ全ての取得が完了していないことを表す
-      raise CulilException
     status = json_data['books'][ISBN][self.systemid]['status']
-    if status in {'Error', 'Running'}:  # データ取得に失敗
+    # continueフラグが1 or statusがRunningの場合はAPIがまだ全ての取得が完了していないことを表すので再トライする
+    if continue_flag == 1 or status == 'Running':
       raise CulilException
+    # 稀にstatusとしてErrorが返ってくることがあるのでその場合は再トライせず空を返す。
+    if status == 'Error':
+      logging.warning(f'API returns error for ISBN={ISBN}!')
+      return {}
     if 'libkey' not in json_data['books'][ISBN][self.systemid]:  # 図書館蔵書情報を表すキーが存在しない
       raise CulilException
     return json_data['books'][ISBN][self.systemid]['libkey']

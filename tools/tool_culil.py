@@ -25,7 +25,7 @@ class CulilModule():
     self.param = {'appkey': self.app_key, 'systemid': self.systemid, 'format': self.format}
 
   @retry(CulilException, tries=5, delay=4)
-  def get_book_status_info(self, ISBN: str) -> dict:
+  def get_book_status_info_retry(self, ISBN: str) -> dict:
     if type(ISBN) is not str:
       raise TypeError("type of ISBN is %s, but str is expected" % type(ISBN))
     self.param['isbn'] = ISBN
@@ -37,13 +37,20 @@ class CulilModule():
     # continueフラグが1 or statusがRunningの場合はAPIがまだ全ての取得が完了していないことを表すので再トライする
     if continue_flag == 1 or status == 'Running':
       raise CulilException
-    # 稀にstatusとしてErrorが返ってくることがあるのでその場合は再トライせず空を返す。
+    # 稀にstatusとしてErrorが返ってくることがある。
     if status == 'Error':
-      logging.warning(f'API returns error for ISBN={ISBN}!')
-      return {}
+      raise CulilException
     if 'libkey' not in json_data['books'][ISBN][self.systemid]:  # 図書館蔵書情報を表すキーが存在しない
       raise CulilException
     return json_data['books'][ISBN][self.systemid]['libkey']
+
+  def get_book_status_info(self, ISBN: str) -> dict:
+    try:
+      info = self.get_book_status_info_retry(ISBN=ISBN)
+    except CulilException:
+      logging.warning(f'Cannot get book info (ISBN={ISBN}) through culil API!')
+      info = {}
+    return info
 
   def check_existence_in_library(self, ISBN: str) -> Tuple[bool, bool]:
     book_status_dict = self.get_book_status_info(ISBN=ISBN)

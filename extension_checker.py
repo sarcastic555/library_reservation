@@ -15,10 +15,10 @@ def is_rental_extension_target(tool, bookid):
   ### 返却日までの日数を計算
   todaydatetime = datetime.date.today()
   remainday = (returndatetime - todaydatetime).days
-  logging.debug(f"remain day of bookid={bookid} = {remainday} days")
+  logging.info(f"remain day of bookid={bookid} = {remainday} days")
   ### 貸出延長可能か確認
   enableextension = tool.get_extension_status_per_book(bookid)
-  logging.debug(f"enableextension of bookid={bookid} = {enableextension}")
+  logging.info(f"enableextension of bookid={bookid} = {enableextension}")
   ### 返却日当日 & 貸出延長可能 の場合は、貸出延長条件が成立したとする
   return (remainday == 0 and enableextension)
 
@@ -36,21 +36,24 @@ def extend_reservation_day_if_satisfied_condition(sleep=3) -> None:
   bookid = 0
   num_of_reservation_extension = 0
   while bookid < total_lend_num:
-    logging.debug(f"bookID = {bookid}")
     ### 条件を満たした資料は貸出延長ボタンを押す
     if is_rental_extension_target(tool, bookid):
-      logging.info(f"bookdID={bookid} return day will be extended.")
+      logging.info(f"Try to extend bookdID={bookid} return date.")
       apply_succeed = tool.apply_reserve_extension(bookid)
       if (apply_succeed):
         logging.info('Return day extenstion succeeded!')
         num_of_reservation_extension += 1
+        bookid = 0  ## 延長申請を行った場合はbookidを0にリセットして初めから再確認する
       else:
         warnings.warn('Return day extension failed.')
         bookid += 1  ## 処理を続行
     else:
+      logging.info(f"Skip extending bookdID={bookid} return date.")
       bookid += 1
 
-  logging.info(f"Reservation of {num_of_reservation_extension} books was extended.")
+  logging.info(
+      f"Final result: Rental date of {num_of_reservation_extension}/{total_lend_num} books was extended."
+  )
 
 
 # マージンを考慮した上で現在時刻が0時から8時までの間ではないかを判定

@@ -165,7 +165,7 @@ class IchikawaModule:
     self.register_sessionID(sessionid_string)
 
   def apply_reserve_extension(self, bookid: int) -> bool:
-    logging.info("IchikawaModule::apply_reserve_extension (bookid = {bookid}) called")
+    logging.info(f"IchikawaModule::apply_reserve_extension (bookid = {bookid}) called")
     self.extend_params['idx'] = '%d' % bookid
     time.sleep(self.sleeptime)
     r = self.session.get(IchikawaURL.lend_list, headers=self.header,

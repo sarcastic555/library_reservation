@@ -18,7 +18,7 @@ class BooklogManager:
   logout_URL = 'https://booklog.jp/logout'
 
   def __init__(self, sleep_time=3):
-    logging.info("BooklogManager constructore called")
+    logging.debug("BooklogManager constructore called")
     self.sleep_time = sleep_time  # [sec]
     self.booklog_id = os.environ['BOOKLOG_ID']
     self.booklog_pass = os.environ['BOOKLOG_PASSWORD']
@@ -51,7 +51,7 @@ class BooklogManager:
     return data
 
   def login(self) -> None:
-    logging.info("BooklogManager::login called")
+    logging.debug("BooklogManager::login called")
     time.sleep(self.sleep_time)
     self.session.get(self.__class__.login_URL)
     time.sleep(self.sleep_time)
@@ -61,18 +61,18 @@ class BooklogManager:
                       allow_redirects=True)
 
   def get_signature(self) -> str:
-    logging.info("BooklogManager::get_signature called")
+    logging.debug("BooklogManager::get_signature called")
     time.sleep(self.sleep_time)
     r = self.session.get(self.__class__.export_URL)
     soup = bs4.BeautifulSoup(r.text, 'html.parser')
     button = soup.find(class_='buttons')
     ## signatureを返す(ボタンにリンクとして埋め込まれている)
     signature = re.search('.*signature=(.*)', button.find('a')['href'])[1]
-    logging.info(f"signature={signature}")
+    logging.debug(f"signature={signature}")
     return signature
 
   def download_csv_file(self) -> str:
-    logging.info("BooklogManager::download_csv_file called")
+    logging.debug("BooklogManager::download_csv_file called")
     signature = self.get_signature()
     ## csvデータとして取得
     time.sleep(self.sleep_time)
@@ -81,7 +81,7 @@ class BooklogManager:
     return r.text
 
   def logout(self) -> None:
-    logging.info("BooklogManager::logout called")
+    logging.debug("BooklogManager::logout called")
     ## ログアウト
     time.sleep(self.sleep_time)
     r = self.session.get(self.__class__.logout_URL,

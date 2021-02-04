@@ -64,7 +64,7 @@ def get_rental_book_df(sleep=3, booklog_file=None) -> pd.DataFrame:
 
   ## 各資料の情報を取得
   for bookid in range(total_num):
-    logging.info(f"checking information of bookid {bookid}")
+    logging.debug(f"checking information of bookid {bookid}")
     info = tool.get_rental_book_information(bookid)
     todaydatetime = datetime.date.today()
     remain_day_for_return = (info.return_datetime_after_extension - todaydatetime).days
@@ -92,7 +92,7 @@ def get_reserving_book_df(sleep=3) -> pd.DataFrame:
   logging.info(f"Total number of books = {total_num}")
   ## 各資料の情報を取得
   for bookid in range(total_num):
-    logging.info(f"checking information of bookid {bookid}")
+    logging.debug(f"checking information of bookid {bookid}")
     info = tool.get_under_reservation_book_information(bookid)
     ## statusが"本人取消"である場合は無視する
     if (re.search('本人取消', info.reserve_status) is not None):

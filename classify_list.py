@@ -33,7 +33,7 @@ def options() -> argparse:
 
 
 def main(options=options):
-  logging.info("classify_list_ichikawa.py start")
+  logging.debug("classify_list_ichikawa.py start")
   bc = BookClassifier(sleep=1)
   # read booklog data, and rental and reserving book list
   df_not_read = bc.get_want_read_book_list(options.booklog_data_file)
@@ -59,7 +59,7 @@ def main(options=options):
   df_not_found = df_not_read[df_not_read['waitstatus'] == 'has_reservation']
   df_not_found.to_csv(options.output_has_reservation_file)
 
-  logging.info("classfy_list_ichikawa.py end")
+  logging.debug("classfy_list_ichikawa.py end")
 
 
 if __name__ == "__main__":

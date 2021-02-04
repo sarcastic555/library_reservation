@@ -18,14 +18,14 @@ class BookClassifier:
   ]
 
   def __init__(self, sleep=1):
-    logging.info("BookClassifier constructor called")
+    logging.debug("BookClassifier constructor called")
     self.sleeptime = sleep  # [sec]
-    logging.info(f"sleep time = {self.sleeptime} sec")
+    logging.debug(f"sleep time = {self.sleeptime} sec")
     self.module = tool_culil.CulilModule()
 
   def get_want_read_book_list(self, booklist_file) -> pd.DataFrame:
-    logging.info("BookClassifier::get_want_read_book_list called")
-    logging.info(f"reading {booklist_file} as all book list file")
+    logging.debug("BookClassifier::get_want_read_book_list called")
+    logging.debug(f"reading {booklist_file} as all book list file")
     df = pd.read_csv(booklist_file, encoding="utf-8", header=None, names=self.__class__.columnname)
     df = df[df['読書状況'] == '読みたい']
     df = df.dropna(subset=['13桁ISBN'])  ## 13桁ISBNが無効値である書籍は対象外とする
@@ -41,8 +41,8 @@ class BookClassifier:
     return df
 
   def read_booklist(self, booklist_file) -> pd.DataFrame:
-    logging.info("BookClassifier::read_booklist called")
-    logging.info(f"reading {booklist_file} as now reading list file")
+    logging.debug("BookClassifier::read_booklist called")
+    logging.debug(f"reading {booklist_file} as now reading list file")
     if not os.path.exists(booklist_file):
       warnings.warn(f"{booklist_file} not found. Skip reading the file")
       return pd.DataFrame(columns=['ISBN'])
@@ -72,13 +72,13 @@ class BookClassifier:
       return 'not_found'
 
   def create_all_book_status(self, notread_df, nowreading_df, short=False) -> pd.Series:
-    logging.info(f"BookClassifier::create_all_book_status (short={short}) called")
+    logging.debug(f"BookClassifier::create_all_book_status (short={short}) called")
     book_status_list = []
     # decrease target book num in short execution version
     target_booknum = min(8, len(notread_df)) if short else len(notread_df)
     for i in range(target_booknum):
       if (i + 1) % 10 == 0:
-        logging.info("Classifying book %d/%d" % (i + 1, target_booknum))
+        logging.debug("Classifying book %d/%d" % (i + 1, target_booknum))
       time.sleep(self.sleeptime)
       book_info = notread_df.iloc[i]
       status = self.evaluate_book_status(book_info, nowreading_df)

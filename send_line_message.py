@@ -33,11 +33,15 @@ def send_line_notify(notification_message) -> bool:
 
 # 最も返却日が近い書籍の返却日までの日数を返す
 def get_minimun_remain_day(df: pd.DataFrame) -> int:
+  logging.debug("get_minimun_remain_day called")
+  logging.debug(f"dataframe size = {len(df)}")
   return df['remainday'].min() if len(df) > 0 else np.nan
 
 
 # 返却日が迫っていて延長不可能な本が存在する場合は通知
 def need_to_send_notification(remainday: int) -> bool:
+  logging.debug("need_to_send_notification called")
+  logging.debug(f"remainday={remainday} (thresh={notify_day_threshold})")
   if np.isnan(remainday):
     return False
   return (remainday < notify_day_threshold)
@@ -46,6 +50,7 @@ def need_to_send_notification(remainday: int) -> bool:
 def main(options: argparse):
   df = pd.read_csv(options.lend_file)
   remainday = get_minimun_remain_day(df)
+  logging.debug(f"remainday={remainday}")
   if need_to_send_notification(remainday):
     logging.info(f"Send line message (remainday = {remainday})")
     send_line_notify(f"市川図書館返却日まであと{remainday}日")

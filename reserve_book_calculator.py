@@ -1,11 +1,13 @@
 import argparse
-import logging
+import logging.config
 import os
 
 import pandas as pd
 
 from src.reserve_book_info_evaluator import (NowLendingListInfo, NowReservingListInfo,
                                              ReserveListInfo)
+
+logging.config.fileConfig("log.conf")
 
 
 def options() -> argparse:

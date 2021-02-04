@@ -1,10 +1,12 @@
 import argparse
-import logging
+import logging.config
 import os
 import random
 from typing import List
 
 import pandas as pd
+
+logging.config.fileConfig("log.conf")
 
 
 def options() -> argparse.ArgumentParser:

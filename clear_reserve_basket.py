@@ -1,8 +1,10 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
-import logging
+import logging.config
 
 from tools.tool_ichikawa import IchikawaModule
+
+logging.config.fileConfig("log.conf")
 
 
 ### 予約カゴを空にする

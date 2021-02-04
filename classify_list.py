@@ -1,9 +1,11 @@
 import argparse
-import logging
+import logging.config
 
 import pandas as pd
 
 from src.book_classifier import BookClassifier
+
+logging.config.fileConfig("log.conf")
 
 
 def options() -> argparse:
@@ -31,7 +33,6 @@ def options() -> argparse:
 
 
 def main(options=options):
-  logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
   logging.info("classify_list_ichikawa.py start")
   bc = BookClassifier(sleep=1)
   # read booklog data, and rental and reserving book list

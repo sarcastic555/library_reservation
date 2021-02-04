@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 import argparse
 import codecs
-import logging
+import logging.config
 import os
 
 from src.booklog_manager import BooklogManager
+
+logging.config.fileConfig("log.conf")
 
 
 def options():

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 import datetime
-import logging
+import logging.config
 import os
 import re
 import time
 
 import bs4
 import requests
+
+logging.config.fileConfig("../log.conf")
 
 
 class BooklogManager:

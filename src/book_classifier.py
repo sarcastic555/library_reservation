@@ -1,4 +1,4 @@
-import logging
+import logging.config
 import os
 import time
 import warnings
@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 
 from tools import tool_culil
+
+logging.config.fileConfig("../log.conf")
 
 
 class BookClassifier:

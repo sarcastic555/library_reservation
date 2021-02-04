@@ -1,8 +1,11 @@
+import logging.config
 import os
 import warnings
 
 import numpy as np
 import pandas as pd
+
+logging.config.fileConfig("log.conf")
 
 
 class NowLendingListInfo:

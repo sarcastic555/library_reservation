@@ -1,6 +1,8 @@
-import logging
+import logging.config
 
 import pandas as pd
+
+logging.config.fileConfig("../log.conf")
 
 
 class BooklogDataHandler:

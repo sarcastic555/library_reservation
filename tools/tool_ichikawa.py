@@ -1,7 +1,7 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
 import datetime
-import logging
+import logging.config
 import os
 import re
 import time
@@ -15,7 +15,7 @@ from tools.book_info import RentalBookInfo, ReserveBookInfo
 from tools.ichikawa_data.header_param_info import HeaderParamInfo
 from tools.ichikawa_data.ichikawa_url import IchikawaURL
 
-logging.basicConfig(level=logging.INFO, format='%(levelname)s : %(asctime)s : %(message)s')
+logging.config.fileConfig("log.conf")
 
 
 class IchikawaModule:
@@ -179,13 +179,14 @@ class IchikawaModule:
     r = self.session.get(IchikawaURL.extend, headers=self.header,
                          params=self.extend_confirm_params)  ## 貸出延長承認を確認
     result = bs4.BeautifulSoup(r.text, "html5lib").find('div', id='main').text
+    logging.info(f"result={result}")
     if (re.search('貸出延長申込が完了しました', result) is not None):
       return True  ## 成功
     else:
       return False  ## 失敗
 
   def get_num_of_total_books(self, listtype: str) -> int:
-    logging.info(f"IchikawaModule::get_num_of_total_books ({listtype}) called")
+    logging.info(f"IchikawaModule::get_num_of_total_books ({len(listtype)}) called")
     time.sleep(self.sleeptime)
     r = self.session.get('%s/%s-list.do' % (IchikawaURL.booklist, listtype), headers=self.header)
     soup_list = bs4.BeautifulSoup(r.text, "html5lib")

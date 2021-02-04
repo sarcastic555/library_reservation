@@ -1,8 +1,10 @@
 import argparse
-import logging
+import logging.config
 import warnings
 
 from tools.tool_ichikawa import IchikawaModule
+
+logging.config.fileConfig("log.conf")
 
 
 def options() -> argparse:

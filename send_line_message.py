@@ -1,7 +1,7 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
 import argparse
-import logging
+import logging.config
 import os
 
 import numpy as np
@@ -10,6 +10,8 @@ import requests
 
 line_api_url = 'https://notify-api.line.me/api/notify'
 notify_day_threshold = 4  # days
+
+logging.config.fileConfig("log.conf")
 
 
 def options():
@@ -22,7 +24,6 @@ def options():
 
 def send_line_notify(notification_message) -> bool:
   line_notify_token = os.environ["LINE_TOKEN_PERSONAL"]
-  print("line_notify_token=", line_notify_token)
   line_notify_api = line_api_url
   headers = {'Authorization': f'Bearer {line_notify_token}'}
   data = {'message': f'message: {notification_message}'}

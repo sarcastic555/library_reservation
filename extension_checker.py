@@ -1,10 +1,12 @@
 # /usr/local/bin/python
 # -*- coding: utf-8 -*-
 import datetime
-import logging
+import logging.config
 import warnings
 
 from tools.tool_ichikawa import IchikawaModule
+
+logging.config.fileConfig("log.conf")
 
 
 ## 対象書籍が貸し出し延長対象であるかを判定する

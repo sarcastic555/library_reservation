@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import datetime
-import logging
+import logging.config
 import os
 import re
 import warnings
@@ -11,6 +11,8 @@ import pandas as pd
 
 from src.booklog_data_handler import BooklogDataHandler
 from tools.tool_ichikawa import IchikawaModule
+
+logging.config.fileConfig("log.conf")
 
 
 def options() -> argparse:

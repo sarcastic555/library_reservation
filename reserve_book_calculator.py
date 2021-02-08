@@ -144,18 +144,18 @@ def calculate_reserve_book_num(options: argparse) -> pd.DataFrame:
       {
           'index': 6,
           'column': 'remain day for return',
-          'common': "%d days" % nowlend.minimum_remain_day()
+          'common': f"{nowlend.minimum_remain_day()} days"
       },
       ignore_index=True)
   df = df.append(
       {
           'index': 7,
           'column': 'read uncompleted book',
-          'common': nowlend.nowlending_num() - nowlend.read_comnplete_num()
+          'common': nowlend.nowlending_num() - nowlend.read_complete_num()
       },
       ignore_index=True)
   if ((nowlend.minimum_remain_day() < 2) or (nowlend.minimum_remain_day() > 8)) and (
-      nowlend.nowlending_num() - nowlend.read_comnplete_num() > 2):
+      nowlend.nowlending_num() - nowlend.read_complete_num() > 2):
     shortwait_reserve = 0
   df = df.append(
       {

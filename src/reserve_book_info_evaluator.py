@@ -1,9 +1,9 @@
-import logging.config
 import os
 import warnings
 
 import numpy as np
 import pandas as pd
+
 
 class NowLendingListInfo:
 
@@ -12,12 +12,12 @@ class NowLendingListInfo:
       warnings.warn(f"{filename} not found. Skip reading nowreading file.")
       self.__nowlending_num = 0
       self.__minimum_remain_day = np.nan
-      self.__read_comnplete_num = 0
+      self.__read_complete_num = 0
     else:
       df = pd.read_csv(filename)
       self.__nowlending_num = len(df)
       self.__minimum_remain_day = np.nan if len(df) == 0 else df['remainday'].min()
-      self.__read_comnplete_num = 0 if len(df) == 0 else (df['read_completed'] == 1).sum()
+      self.__read_complete_num = 0 if len(df) == 0 else (df['read_completed'] == 1).sum()
 
   # 単体テストのためにgetterを作成する
   def nowlending_num(self) -> int:
@@ -26,8 +26,8 @@ class NowLendingListInfo:
   def minimum_remain_day(self) -> int:
     return self.__minimum_remain_day
 
-  def read_comnplete_num(self) -> int:
-    return self.__read_comnplete_num
+  def read_complete_num(self) -> int:
+    return self.__read_complete_num
 
 
 class NowReservingListInfo:

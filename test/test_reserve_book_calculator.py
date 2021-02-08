@@ -179,7 +179,7 @@ def test_reserve_book_info7(longwait, shortwait, prepared, remainday) -> None:
 # 返却期限が遠く、読み終わっている本が少ない時はshortwaitのみ予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.nowlending_num')
-@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.read_comnplete_num')
+@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.read_complete_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.prepared_book_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.shortwait_book_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.longwait_book_num')
@@ -208,7 +208,7 @@ def test_reserve_book_info8(longwait, shortwait, prepared, read_complete, nowlen
 # 返却期限が近すぎて、かつ読み終わっている本が少ない時はshortwaitのみ予約しない
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.nowlending_num')
-@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.read_comnplete_num')
+@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.read_complete_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.prepared_book_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.shortwait_book_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.longwait_book_num')
@@ -237,7 +237,7 @@ def test_reserve_book_info9(longwait, shortwait, prepared, read_complete, nowlen
 # 返却期限が遠すぎても読み終わっていない本が残っていないときはshortwaitも予約する
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.minimum_remain_day')
 @mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.nowlending_num')
-@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.read_comnplete_num')
+@mock.patch('src.reserve_book_info_evaluator.NowLendingListInfo.read_complete_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.prepared_book_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.shortwait_book_num')
 @mock.patch('src.reserve_book_info_evaluator.NowReservingListInfo.longwait_book_num')

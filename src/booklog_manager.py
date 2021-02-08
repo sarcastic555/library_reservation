@@ -8,8 +8,6 @@ import time
 import bs4
 import requests
 
-logging.config.fileConfig("../log.conf")
-
 
 class BooklogManager:
   login_URL = 'https://booklog.jp/login'

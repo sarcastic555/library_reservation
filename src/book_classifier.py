@@ -8,8 +8,6 @@ import pandas as pd
 
 from tools import tool_culil
 
-logging.config.fileConfig("../log.conf")
-
 
 class BookClassifier:
   columnname = [

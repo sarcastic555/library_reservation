@@ -5,8 +5,6 @@ import warnings
 import numpy as np
 import pandas as pd
 
-logging.config.fileConfig("log.conf")
-
 class NowLendingListInfo:
 
   def __init__(self, filename: str):

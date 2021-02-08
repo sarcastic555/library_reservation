@@ -7,7 +7,6 @@ import pandas as pd
 
 logging.config.fileConfig("log.conf")
 
-
 class NowLendingListInfo:
 
   def __init__(self, filename: str):
@@ -20,7 +19,7 @@ class NowLendingListInfo:
       df = pd.read_csv(filename)
       self.__nowlending_num = len(df)
       self.__minimum_remain_day = np.nan if len(df) == 0 else df['remainday'].min()
-      self.__read_comnplete_num = (df['read_completed'] == 1).sum()
+      self.__read_comnplete_num = 0 if len(df) == 0 else (df['read_completed'] == 1).sum()
 
   # 単体テストのためにgetterを作成する
   def nowlending_num(self) -> int:

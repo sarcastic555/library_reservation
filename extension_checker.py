@@ -31,6 +31,7 @@ def extend_reservation_day_if_satisfied_condition(sleep=3) -> None:
   tool = IchikawaModule(sleep=sleep)
   ## 貸し出し中冊数の取得
   total_lend_num = tool.get_num_of_total_books(listtype="lend")
+  logging.info(f"total lend book num = {total_lend_num}")
 
   ## 延長予約申請チェック
   ## 予約延長申請をすると本の順番が変わってしまうことへの対策として
@@ -39,7 +40,9 @@ def extend_reservation_day_if_satisfied_condition(sleep=3) -> None:
   num_of_reservation_extension = 0
   while bookid < total_lend_num:
     ### 条件を満たした資料は貸出延長ボタンを押す
-    if is_rental_extension_target(tool, bookid):
+    need_extension = is_rental_extension_target(tool, bookid)
+    logging.debug(f"book (ID={bookid}) need_extension = {need_extension}")
+    if need_extension:
       logging.debug(f"Try to extend bookdID={bookid} return date.")
       apply_succeed = tool.apply_reserve_extension(bookid)
       if (apply_succeed):

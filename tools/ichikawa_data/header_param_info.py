@@ -77,9 +77,7 @@ class HeaderParamInfo:
       'opt_pagesize': '10',
       'submit_btn_searchDetailSelAr': '所蔵検索'
   }
-  # hid_sessionはあとで上書きするので暫定的に"0000000"で初期化しておく
   reserve_params = {
-      "hid_session": "0000000",
       "chk_rsvbib": "",
       "submit_btn_rsv_basket": "予約かご",
       "cmb_oder": "title",
@@ -91,7 +89,6 @@ class HeaderParamInfo:
       "opt_pagesize": "10"
   }
   basket_submit_params = {
-      "hid_session": "00000000",
       "hid_aplph": "W",
       "cmb_area": "02",
       "view-title": "T170P68001",
@@ -102,7 +99,6 @@ class HeaderParamInfo:
       "submit_btn_reservation": "通常予約する"
   }
   basket_delete_params = {
-      "hid_session": "00000000",
       "hid_aplph": "W",
       "cmb_area": "02",
       "view-title": "T170P68001",
@@ -111,18 +107,13 @@ class HeaderParamInfo:
       "cmb_day": "31",
       "submit_btn_delete": "削除"
   }
-  basket_delete_confirm_params = {"hid_session": "00000000", "submit_btn_delete": "削除"}
-  confirm_params = {"hid_session": "00000000", "hid_aplph": "W", "submit_btn_confirm": "予約する"}
+  basket_delete_confirm_params = {"submit_btn_delete": "削除"}
+  confirm_params = {"hid_aplph": "W", "submit_btn_confirm": "予約する"}
   mypage_params = {"dispatch": "/opac/mylibrary.do", "every": "1"}
   extend_params = {
-      "hid_session": "00000000",
       "idx": "0",
       "submit_btn_extend": "/T170P11011",
       "opt_pagesize": "10",
       "opt_pagesize": "10"
   }
-  extend_confirm_params = {
-      "hid_session": "00000000",
-      "hid_lenid": "0001501174",
-      "submit_btn_confirm": "貸出延長する"
-  }
+  extend_confirm_params = {"submit_btn_confirm": "貸出延長する"}

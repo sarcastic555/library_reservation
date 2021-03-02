@@ -26,8 +26,8 @@ def is_rental_extension_target(tool, bookid):
 
 
 ### 条件を満たした資料に関して予約延長申請を行う
-def extend_reservation_day_if_satisfied_condition(sleep=3) -> None:
-  logging.debug("extend_reservation_day_if_satisfied_condition called")
+def extend_lend_day_if_satisfied_condition(sleep=3) -> None:
+  logging.debug("extend_lend_day_if_satisfied_condition called")
   tool = IchikawaModule(sleep=sleep)
   ## 貸し出し中冊数の取得
   total_lend_num = tool.get_num_of_total_books(listtype="lend")
@@ -75,7 +75,7 @@ def main():
   # 現在時刻をチェックし、図書館サイトの仕様上延長申請が許可されていない時間である場合はエラーとする
   if (is_extension_available(margin=300)):
     logging.info("Extension process can be allowed at this time")
-    extend_reservation_day_if_satisfied_condition(sleep=3)
+    extend_lend_day_if_satisfied_condition(sleep=3)
   else:
     warnings.warn("Extension process can be allowed at this time")
 

@@ -82,3 +82,8 @@ python reserve_book.py --shortwait_reserve_list list/shortwait_reserve_list.csv 
 ```
 pytest
 ```
+
+## Jenkins pipeline
+URL非公開
+<img width="1209" alt="Screen Shot 2021-03-02 at 21 50 20" src="https://user-images.githubusercontent.com/29055397/109651048-663a9b00-7ba1-11eb-82ed-e7c989598ec2.png">
+

@@ -40,7 +40,7 @@ class IchikawaModule:
     self.confirm_params = HeaderParamInfo.confirm_params
     self.mypage_params = HeaderParamInfo.mypage_params
     self.extend_params = HeaderParamInfo.extend_params
-    self.extend_confirm_params = HeaderParamInfo.extend_params
+    self.extend_confirm_params = HeaderParamInfo.extend_confirm_params
 
     ## ログイン処理はコンストラクタで実行
     self.execute_login_procedure()
@@ -169,20 +169,23 @@ class IchikawaModule:
     self.extend_params['idx'] = '%d' % bookid
     time.sleep(self.sleeptime)
     r = self.session.get(IchikawaURL.lend_list, headers=self.header,
-                         params=self.extend_params)  ## 貸出延長ボタンを押す
-    ### hid_lenid (ex. 0001691493) を取得しparamに詰める
+                         params=self.extend_params)  # 貸し出し資料一覧ページから「延長」ボタンを押す
+    # hid_lenid (ex. 0001691493) を取得しparamに詰める
     inputlist = bs4.BeautifulSoup(r.text, "html5lib").find('div', id='main').find_all('input')
     hid_lenid = [ilist['value'] for ilist in inputlist if ilist['name'] == 'hid_lenid'][0]
     logging.debug(f"hid_lenid={hid_lenid}")
     self.extend_confirm_params['hid_lenid'] = hid_lenid
     time.sleep(self.sleeptime)
-    r = self.session.get(IchikawaURL.extend, headers=self.header,
-                         params=self.extend_confirm_params)  ## 貸出延長承認を確認
+    self.header['Referer'] = IchikawaURL.lend_list  # This is necessary
+    r = self.session.post(IchikawaURL.extend,
+                          headers=self.header,
+                          params=self.extend_confirm_params)  # 「貸出延長」ボタンを押して延長を確定
     result = bs4.BeautifulSoup(r.text, "html5lib").find('div', id='main').text
-    logging.info(f"result={result}")
     if (re.search('貸出延長申込が完了しました', result) is not None):
+      logging.info("Lend extension succeed")
       return True  ## 成功
     else:
+      logging.warn("Lend extension failed")
       return False  ## 失敗
 
   def get_num_of_total_books(self, listtype: str) -> int:

@@ -1,7 +1,2 @@
 __pycache__
-list
-log
-*.pem
-.DS_Store
-.ipynb_checkpoints
-result
+test

@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 services:
   selenium:
     image: selenium/standalone-chrome:129.0
@@ -17,4 +17,5 @@ services:
       - .:/src
     environment:
       - SELENIUM_URL=http://selenium:4444/wd/hub
+      - CULIL_API_KEY=${CULIL_API_KEY}  # Pass the environment variable from the host
     tty: true
